@@ -197,6 +197,7 @@ def _test_scope_types():
     for name in ("zone", "sector", "site"):
         scope_service._REGISTRY.pop(name, None)
 
+
 def test_grant_and_revoke_scope(admin_user, make_user):
     target = make_user()
     scope = ScopeService.grant_scope(
@@ -233,7 +234,9 @@ def test_scope_registry_supports_phase2_validators(make_user):
         register_scope_type("sector", "Sector", validator=lambda ref: ref.startswith("AREA-"))
         with pytest.raises(ValidationException):
             ScopeService.grant_scope(actor=su, user=target, scope_type="sector", scope_ref="bogus")
-        ScopeService.grant_scope(actor=su, user=target, scope_type="sector", scope_ref="AREA-LHR-001")
+        ScopeService.grant_scope(
+            actor=su, user=target, scope_type="sector", scope_ref="AREA-LHR-001"
+        )
     finally:
         restore_scope_type(original)
 

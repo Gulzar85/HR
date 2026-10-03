@@ -27,6 +27,14 @@ python manage.py createsuperuser          # first administrator (email + usernam
 ```
 Sign in at `/accounts/login/` (email + password). Administration UI: `/admin/users/`, `/admin/roles/`, `/admin/groups/`; self-service `/profile/`, `/profile/sessions/`. Django admin (fallback) moved to `/django-admin/`. API: `/api/v1/auth/token/` (JWT). See `../docs/architecture/identity-and-access.md`, `../docs/security/`, `../docs/api/authentication.md`.
 
+## Organization (Phase 2)
+```powershell
+python manage.py seed_organization --sample-operations   # dev only: company, Corporate/Operations, Lahore/Karachi + departments, sample regions/areas/restaurants
+python manage.py validate_organization                   # data-quality checks
+python manage.py organization_tree                       # print the hierarchy
+```
+UI at `/organizations/` (overview, structure tree, per-type screens). API at `/api/v1/organizations/`. Grant users an organization scope (Users → Access scopes) so they can see data. See `../docs/architecture/organization-management.md` and `../docs/security/organization-scopes.md`.
+
 ## Run
 ```powershell
 python manage.py migrate
@@ -49,6 +57,6 @@ celery -A config beat -l info                  # schedules outbox dispatch
 ## Architectural rules
 1. CBVs only for web views. 2. Writes in services (`transaction.atomic`), reads in selectors. 3. UUID PKs + immutable business codes. 4. User ≠ Employee; Candidate ≠ Employee. 5. Electron uses only the REST API. 6. No hard-coded brand colors; use theme tokens. 7. Dependencies flow common → platform → domain → services → web/api. 8. Schema changes only via migrations. 9. Logging via `ems.*` loggers, never `print`.
 
-Status: Phase 0 (foundation) and Phase 1 (identity, authentication, RBAC, user administration) complete.
+Status: Phase 0 (foundation), Phase 1 (identity, RBAC, user administration) and Phase 2 (organization management) complete.
 
 Roadmap: `../docs/architecture/phase-roadmap.md`. Each phase is committed and pushed on completion.

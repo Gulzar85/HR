@@ -76,8 +76,11 @@ exclude = ["migrations", "tests"]
 # deal with request.user being "User | AnonymousUser" and dynamic form fields, so a few
 # error classes are relaxed there (authorization is enforced at runtime and tested).
 [[tool.mypy.overrides]]
-module = ["apps.accounts.views.*", "apps.accounts.forms.*", "apps.accounts.api.*"]
-disable_error_code = ["arg-type", "union-attr", "attr-defined", "assignment", "var-annotated"]
+module = [
+    "apps.accounts.views.*", "apps.accounts.forms.*", "apps.accounts.api.*",
+    "apps.organizations.views.*", "apps.organizations.forms.*", "apps.organizations.api.*",
+]
+disable_error_code = ["arg-type", "union-attr", "attr-defined", "assignment", "var-annotated", "misc", "override", "index", "operator"]
 
 [tool.django-stubs]
 django_settings_module = "config.settings.development"

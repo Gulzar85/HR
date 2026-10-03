@@ -1,0 +1,16 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ org_type.plural }} · {{ theme.brand_name }}{% endblock %}
+{% block heading %}{{ org_type.plural }}{% endblock %}
+{% block actions %}{% if can_add %}<a class="btn btn-primary" href="{% url 'organizations:'|add:org_type.key|add:'_create' %}"><i data-lucide="plus" aria-hidden="true"></i>New {{ org_type.label|lower }}</a>{% endif %}{% endblock %}
+{% block content %}
+<section class="card">
+  <form method="get" class="filters" role="search" aria-label="Filter {{ org_type.plural|lower }}"
+        hx-get="" hx-target="#results" hx-push-url="true" hx-trigger="input delay:300ms from:#id_q, change">
+    {% for field in filter.form %}
+    <div><label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>
+    {% endfor %}
+    <div class="cluster"><button type="submit" class="btn"><i data-lucide="filter" aria-hidden="true"></i>Apply</button><a class="btn btn-ghost" href="?">Reset</a></div>
+  </form>
+  <div id="results">{% include "organizations/_unit_table.html" %}</div>
+</section>
+{% endblock %}

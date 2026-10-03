@@ -1,0 +1,15 @@
+<li role="treeitem"{% if node.children %} aria-expanded="{{ open|yesno:'true,false' }}"{% endif %}>
+{% if node.children %}
+  <details{% if open %} open{% endif %}>
+    <summary class="tree-node{% if node.context %} context{% endif %}">
+      <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
+      {% include "organizations/_tree_label.html" %}
+    </summary>
+    <ul role="group">
+      {% for child in node.children %}{% include "organizations/_tree_node.html" with node=child open=False %}{% endfor %}
+    </ul>
+  </details>
+{% else %}
+  <div class="tree-node{% if node.context %} context{% endif %}"><span class="tree-leaf-pad"></span>{% include "organizations/_tree_label.html" %}</div>
+{% endif %}
+</li>

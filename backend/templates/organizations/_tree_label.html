@@ -1,0 +1,5 @@
+<i data-lucide="{{ node.icon }}" aria-hidden="true"></i>
+{% if node.context %}<span>{{ node.name }}</span>{% else %}<a href="{{ node.url }}">{{ node.name }}</a>{% endif %}
+<span class="tree-type">{{ node.type_label }} &middot; {{ node.code }}</span>
+{% if node.status != "active" %}{% include "components/org_status.html" with status=node.status %}{% endif %}
+{% if node.counts.restaurant and node.type != "restaurant" %}<span class="badge badge-outline">{{ node.counts.restaurant }} restaurant{{ node.counts.restaurant|pluralize }}</span>{% endif %}

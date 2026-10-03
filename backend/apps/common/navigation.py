@@ -83,5 +83,9 @@ register_nav_section("main", "", order=0)
 register_nav_section("administration", "Administration", order=50)
 register_nav_section("account", "My account", order=90)
 register_nav_item("main", "Home", "home", icon="layout-dashboard", key="home", order=0)
-register_nav_item("account", "Profile", "accounts:profile", icon="user-round", key="profile", order=10)
-register_nav_item("account", "Sessions", "accounts:sessions", icon="monitor-smartphone", key="sessions", order=20)
+register_nav_item(
+    "account", "Profile", "accounts:profile", icon="user-round", key="profile", order=10
+)
+register_nav_item(
+    "account", "Sessions", "accounts:sessions", icon="monitor-smartphone", key="sessions", order=20
+)

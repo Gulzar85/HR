@@ -34,7 +34,7 @@ class AdminAccessMixin(EMSPermissionMixin):
 
     @property
     def ctx(self) -> RequestContext:
-        return RequestContext.from_request(self.request)
+        return RequestContext.from_request(self.request)  # type: ignore[attr-defined]
 
     def get_breadcrumbs(self) -> list[tuple[str, str | None]]:
         return self.breadcrumbs

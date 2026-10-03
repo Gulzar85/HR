@@ -1,0 +1,2 @@
+<option value="">{{ blank_label }}</option>{% for o in options %}
+<option value="{{ o.pk }}">{{ o.code }} · {{ o.name }}</option>{% endfor %}

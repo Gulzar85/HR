@@ -1,1 +1,1 @@
-"""Data-quality rules and scans (Phase 19)."""
+"""Data quality: a registry of read-only checks contributed by each domain (see registry.py)."""

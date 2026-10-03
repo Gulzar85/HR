@@ -1,0 +1,7 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ page_title }} · {{ theme.brand_name }}{% endblock %}
+{% block heading %}{{ page_title }}{% endblock %}
+{% block subtitle_wrap %}{% if current_parent %}<p class="page-subtitle">Currently under <strong>{{ current_parent.name }}</strong> ({{ current_parent.code }}). The previous placement is kept in history.</p>{% elif unit %}<p class="page-subtitle"><code>{{ unit.code }}</code> &middot; the business code cannot be changed.</p>{% else %}<p class="page-subtitle">A unique code is generated automatically and cannot be changed later.</p>{% endif %}{% endblock %}
+{% block content %}
+{% include "components/form_page.html" %}
+{% endblock %}

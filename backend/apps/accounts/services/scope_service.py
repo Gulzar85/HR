@@ -61,7 +61,9 @@ def register_scope_type(
     describe: Callable[[str], str] | None = None,
 ) -> None:
     """Register (or replace) a scope type."""
-    _REGISTRY[name] = ScopeType(name, label, descendants, validator, ancestors, normalizer, describe)
+    _REGISTRY[name] = ScopeType(
+        name, label, descendants, validator, ancestors, normalizer, describe
+    )
 
 
 def restore_scope_type(spec: ScopeType) -> None:
@@ -94,12 +96,24 @@ class ScopeService:
     # --------------------------------------------------------------- reads
     @staticmethod
     def get_user_scopes(user: User) -> list[UserScope]:
+        """Active scopes, memoised on the user *instance* (one request; cleared on grant/revoke)."""
+        cached = getattr(user, "_ems_scope_cache", None)
+        if cached is not None:
+            return cached
         now = timezone.now()
-        return list(
+        scopes = list(
             UserScope.objects.filter(user=user).filter(
                 Q(expires_at__isnull=True) | Q(expires_at__gt=now)
             )
         )
+        if getattr(user, "pk", None):
+            user._ems_scope_cache = scopes  # type: ignore[union-attr,attr-defined]
+        return scopes
+
+    @staticmethod
+    def clear_cache(user: Any) -> None:
+        if user is not None:
+            user.__dict__.pop("_ems_scope_cache", None)
 
     @classmethod
     def has_global_scope(cls, user: Any) -> bool:
@@ -289,6 +303,7 @@ class ScopeService:
             raise PermissionDeniedException("You cannot change your own access scopes.")
         if not cls.can_access_scope(actor, scope_type, scope_ref):
             raise PermissionDeniedException("You cannot grant a scope outside your own access.")
+        cls.clear_cache(user)
         scope, _created = UserScope.objects.update_or_create(
             user=user,
             scope_type=scope_type,
@@ -332,6 +347,7 @@ class ScopeService:
             "label": cls.describe(scope.scope_type, scope.scope_ref),
         }
         scope.delete()
+        cls.clear_cache(user)
         record_account_event(
             AccountEvent.EventType.SCOPE_REVOKED, target=user, actor=actor, before=before, ctx=ctx
         )

@@ -63,3 +63,6 @@ No migration or API change is needed in accounts. Querysets are narrowed with `f
 
 ## Impersonation
 Not implemented. A future implementation must require an explicit permission, record admin + target + start/end in the audit log, never reveal the target's password, and never hide the administrator's identity.
+
+## Phase 2 changes
+Scope types are now backed by real organization units (see docs/security/organization-scopes.md). `ScopeService` gained `get_ancestors`, `get_descendants`, `resolve_user_organization_scopes`, `user_can_access_organization`, and an optional `own_type` for `filter_queryset_by_scope`. Registered callbacks may also provide `normalizer` and `describe`. User scopes are memoised per request on the user instance. The Phase 1 API is unchanged. The admin view mixins moved to `apps/common/views/base.py`, and `apps/accounts/views/base.py` re-exports them.

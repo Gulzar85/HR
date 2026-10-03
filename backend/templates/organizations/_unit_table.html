@@ -1,0 +1,19 @@
+<div class="table-wrap">
+  <table class="table">
+    <caption class="sr-only">{{ org_type.plural }}</caption>
+    <thead><tr>{% for col in columns %}<th scope="col"{% if col.hide_sm %} class="hide-sm"{% endif %}>{{ col.label }}</th>{% endfor %}<th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        {% for cell in row.cells %}
+        <td{% if cell.hide_sm %} class="hide-sm"{% endif %}>{% if cell.kind == "status" %}{% include "components/org_status.html" with status=cell.obj.status %}{% elif cell.kind == "date" %}<span class="nowrap">{{ cell.value|date:"d M Y"|default:"—" }}</span>{% else %}{{ cell.value }}{% endif %}</td>
+        {% endfor %}
+        <td class="actions"><a class="btn btn-sm" href="{{ row.url }}">Open</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="{{ columns|length|add:1 }}">{% include "components/empty.html" with icon=org_type.icon text="Nothing to show. Adjust the filters, or you may not have access to any unit of this type." %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" with hx_target="#results" %}

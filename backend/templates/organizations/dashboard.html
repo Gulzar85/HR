@@ -1,0 +1,25 @@
+{% extends "layouts/app.html" %}
+{% block title %}Organization · {{ theme.brand_name }}{% endblock %}
+{% block heading %}Organization{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">Organizational master data within your access scope.</p>{% endblock %}
+{% block actions %}<a class="btn" href="{% url 'organizations:tree' %}"><i data-lucide="network" aria-hidden="true"></i>Structure tree</a>{% endblock %}
+{% block content %}
+<div class="grid grid-3">
+  {% for card in cards %}{% if card.visible %}
+  <a class="card stat" href="{{ card.url }}">
+    <div class="stat-label"><i data-lucide="{{ card.icon }}" aria-hidden="true"></i>{{ card.label }}</div>
+    <div class="stat-value">{{ card.value }}</div>
+  </a>
+  {% endif %}{% endfor %}
+</div>
+<section class="card" aria-labelledby="h-rst">
+  <div class="card-header"><h2 id="h-rst">Restaurants by status</h2>
+    <span class="cluster small"><span class="badge badge-success">{{ restaurants_active }} active</span><span class="badge">{{ restaurants_inactive }} not active</span></span>
+  </div>
+  <div class="card-body cluster">
+    {% for status, count in restaurant_status.items %}
+      <a href="{% url 'organizations:restaurant_list' %}?status={{ status }}" class="cluster">{% include "components/org_status.html" with status=status %} <strong>{{ count }}</strong></a>
+    {% empty %}<span class="muted">No restaurants in your scope yet.</span>{% endfor %}
+  </div>
+</section>
+{% endblock %}

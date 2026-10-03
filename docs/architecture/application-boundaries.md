@@ -23,7 +23,8 @@ Keep each small; no 100-field Employee.
 ## Recruitment / ATS (Phase 7)
 Candidate, Job Requisition, Job Posting, Application, Application Stage, Interview, Interview Panel, Assessment, Offer, Candidate Note, Recruitment Source, Hiring. `Candidate ≠ Employee`: a candidate becomes an employee only through `HireService`, which (in one transaction) creates Person/Employee/Employment/Assignment, emits `EmployeeHired`, and triggers onboarding via the outbox.
 
-## Organization hierarchy (Phase 2)
+## Organization hierarchy (Phase 2, implemented)
+See organization-management.md. 
 Company → Corporate → (Lahore | Karachi) → Finance/HR/IT/Supply Chain/Corporate Ops; Company → Operations → Region → Area → Restaurant.
 
 Other domains reference each other by ID/service/event, not by importing views.

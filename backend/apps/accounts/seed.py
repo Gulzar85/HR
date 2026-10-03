@@ -16,14 +16,37 @@ ACCOUNT_ADMIN_PERMS = [
     "accounts.manage_permissions", "accounts.view_security_history", "audit.view_audit_logs",
 ]  # fmt: skip
 
+ORG_MODELS = [
+    "company",
+    "division",
+    "corporatelocation",
+    "department",
+    "region",
+    "area",
+    "restaurant",
+]
+ORG_VIEW_PERMS = [f"organizations.view_{m}" for m in ORG_MODELS] + [
+    "organizations.view_organization_structure",
+    "organizations.view_organization_history",
+]
+ORG_ADMIN_PERMS = (
+    ORG_VIEW_PERMS
+    + [f"organizations.{action}_{m}" for m in ORG_MODELS for action in ("add", "change")]
+    + ["organizations.change_organization_status", "organizations.move_organization"]
+)
+OPS_MANAGER_PERMS = [
+    "organizations.view_region", "organizations.view_area", "organizations.view_restaurant",
+    "organizations.view_organization_structure",
+]  # fmt: skip
+
 DEFAULT_ROLES: list[tuple[str, str, str, list[str]]] = [
-    ("System Administrator", "system-administrator", "Full identity & access administration.", ACCOUNT_ADMIN_PERMS),
-    ("HR Administrator", "hr-administrator", "HR administration across the organization.", []),
+    ("System Administrator", "system-administrator", "Full identity, access and organization administration.", ACCOUNT_ADMIN_PERMS + ORG_ADMIN_PERMS),
+    ("HR Administrator", "hr-administrator", "HR administration across the organization.", ORG_VIEW_PERMS),
     ("HR Manager", "hr-manager", "Manages the HR function.", []),
     ("Corporate Manager", "corporate-manager", "Corporate location management.", []),
-    ("Regional Manager", "regional-manager", "Manages a region.", []),
-    ("Area Manager", "area-manager", "Manages an area.", []),
-    ("Restaurant Manager", "restaurant-manager", "Manages a restaurant.", []),
+    ("Regional Manager", "regional-manager", "Manages a region.", OPS_MANAGER_PERMS),
+    ("Area Manager", "area-manager", "Manages an area.", OPS_MANAGER_PERMS),
+    ("Restaurant Manager", "restaurant-manager", "Manages a restaurant.", OPS_MANAGER_PERMS),
     ("Department Manager", "department-manager", "Manages a department.", []),
     ("HR Officer", "hr-officer", "Day-to-day HR operations.", []),
     ("Recruiter", "recruiter", "Recruitment / ATS operations.", []),

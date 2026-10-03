@@ -1,0 +1,95 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ unit.code }} · {{ theme.brand_name }}{% endblock %}
+{% block heading %}{{ unit.name }}{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle"><code>{{ unit.code }}</code> &middot; {{ org_type.label }} &middot; {% include "components/org_status.html" with status=unit.status %}</p>{% endblock %}
+{% block actions %}
+{% if can_edit %}<a class="btn" href="{% url 'organizations:'|add:org_type.key|add:'_edit' unit.pk %}"><i data-lucide="pencil" aria-hidden="true"></i>Edit</a>{% endif %}
+{% if can_move %}<a class="btn" href="{% url 'organizations:'|add:org_type.key|add:'_move' unit.pk %}"><i data-lucide="move" aria-hidden="true"></i>Move</a>{% endif %}
+{% for action, label in status_actions %}
+  <a class="btn{% if action == 'deactivate' or action == 'close' or action == 'archive' %} btn-danger{% endif %}" href="{% url 'organizations:'|add:org_type.key|add:'_status' unit.pk %}?action={{ action }}">{{ label }}</a>
+{% endfor %}
+{% endblock %}
+{% block content %}
+{% if ancestors %}
+<nav class="card" aria-label="Position in the organization">
+  <div class="card-body cluster small">
+    <i data-lucide="network" aria-hidden="true"></i>
+    {% for a in ancestors %}<span class="muted">{{ a.code }}</span> {{ a.name }} <span class="muted">›</span> {% endfor %}<strong>{{ unit.name }}</strong>
+  </div>
+</nav>
+{% endif %}
+
+<div class="grid grid-2">
+  <section class="card" aria-labelledby="h-details">
+    <div class="card-header"><h2 id="h-details">Details</h2></div>
+    <div class="card-body">
+      <dl class="details">
+        <dt>Code</dt><dd><code>{{ unit.code }}</code></dd>
+        <dt>Name</dt><dd>{{ unit.name }}</dd>
+        <dt>Status</dt><dd>{% include "components/org_status.html" with status=unit.status %}</dd>
+        {% if parent %}<dt>Parent</dt><dd><a href="{% url 'organizations:'|add:parent.ORG_TYPE|add:'_detail' parent.pk %}">{{ parent.name }}</a> <span class="muted small">{{ parent.code }}</span></dd>{% endif %}
+        <dt>Effective</dt><dd>{{ unit.effective_from|date:"d M Y" }} &ndash; {% if unit.effective_to %}{{ unit.effective_to|date:"d M Y" }}{% else %}present{% endif %}</dd>
+        {% for label, value in fields %}{% if value or value == 0 %}<dt>{{ label }}</dt><dd>{% if value.year %}{{ value|date:"d M Y" }}{% else %}{{ value|linebreaksbr }}{% endif %}</dd>{% endif %}{% endfor %}
+        {% if unit.description %}<dt>Description</dt><dd>{{ unit.description|linebreaksbr }}</dd>{% endif %}
+      </dl>
+    </div>
+  </section>
+
+  {% for group in children %}
+  <section class="card" aria-labelledby="h-children-{{ forloop.counter }}">
+    <div class="card-header">
+      <h2 id="h-children-{{ forloop.counter }}">{{ group.type.plural }} <span class="badge badge-outline">{{ group.total }}</span></h2>
+      <div class="cluster">
+        {% if group.list_url and group.total > 0 %}<a class="btn btn-sm btn-ghost" href="{{ group.list_url }}">View all</a>{% endif %}
+        {% if group.can_add and unit.is_live %}<a class="btn btn-sm" href="{{ group.create_url }}"><i data-lucide="plus" aria-hidden="true"></i>Add</a>{% endif %}
+      </div>
+    </div>
+    <div class="card-body flush table-wrap">
+      <table class="table">
+        <tbody>
+        {% for child in group.units %}
+          <tr><td><a class="cell-title" href="{% url 'organizations:'|add:group.type.key|add:'_detail' child.pk %}">{{ child.name }}</a><span class="cell-sub">{{ child.code }}</span></td><td class="actions">{% include "components/org_status.html" with status=child.status %}</td></tr>
+        {% empty %}
+          <tr><td>{% include "components/empty.html" with icon=group.type.icon text="None yet." %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endfor %}
+</div>
+
+{% if can_history %}
+<div class="grid grid-2">
+  <section class="card" aria-labelledby="h-history">
+    <div class="card-header"><h2 id="h-history">History</h2></div>
+    <div class="card-body">
+      <ul class="timeline">
+      {% for h in history %}
+        <li>
+          <div><strong>{{ h.get_event_display }}</strong>{% if h.reason %} &mdash; {{ h.reason }}{% endif %}</div>
+          {% if h.before or h.after %}<div class="small muted">{% for k, v in h.before.items %}{{ k }}: {{ v|default:"—" }} {% endfor %}{% if h.before and h.after %}→ {% endif %}{% for k, v in h.after.items %}{{ k }}: {{ v|default:"—" }} {% endfor %}</div>{% endif %}
+          <div class="when">{{ h.timestamp|date:"d M Y H:i" }}{% if h.effective_date %} &middot; effective {{ h.effective_date|date:"d M Y" }}{% endif %} &middot; {% if h.actor %}{{ h.actor.display_name }}{% else %}system{% endif %}</div>
+        </li>
+      {% empty %}<li class="muted">No history yet.</li>{% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% if relationships %}
+  <section class="card" aria-labelledby="h-rel">
+    <div class="card-header"><h2 id="h-rel">Parent history</h2></div>
+    <div class="card-body flush table-wrap">
+      <table class="table">
+        <thead><tr><th scope="col">Parent</th><th scope="col">From</th><th scope="col">Until (exclusive)</th><th scope="col">Reason</th></tr></thead>
+        <tbody>
+        {% for r in relationships %}
+          <tr><td>{% if r.parent %}<a href="{% url 'organizations:'|add:r.parent_type|add:'_detail' r.parent_id %}">{{ r.parent.name }}</a> <span class="muted small">{{ r.parent.code }}</span>{% else %}{{ r.parent_type }} <span class="muted small">{{ r.parent_id }}</span>{% endif %}</td><td class="nowrap">{{ r.effective_from|date:"d M Y" }}</td><td class="nowrap">{% if r.effective_to %}{{ r.effective_to|date:"d M Y" }}{% else %}current{% endif %}</td><td>{{ r.reason|default:"—" }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
