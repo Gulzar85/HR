@@ -15,3 +15,5 @@ backend/logs/
 .coverage
 htmlcov/
 *.egg-info/
+.dev-admin-credentials.txt
+.claude/

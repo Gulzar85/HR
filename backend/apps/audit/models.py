@@ -16,9 +16,12 @@ class AuditLog(UUIDModel):
     object_id = models.CharField(max_length=64, blank=True)
     changes = models.JSONField(default=dict, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=400, blank=True)
+    reason = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ["-occurred_at"]
+        permissions = [("view_audit_logs", "Can view audit logs")]
         indexes = [models.Index(fields=["object_type", "object_id"], name="audit_object_idx")]
 
     def __str__(self) -> str:

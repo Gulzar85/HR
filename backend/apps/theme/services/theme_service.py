@@ -28,10 +28,16 @@ class ThemeService:
     @staticmethod
     def resolve(request: Any = None) -> ResolvedTheme:
         d: dict[str, Any] = copy.deepcopy(settings.EMS_THEME_DEFAULTS)
+        mode = d["mode"]
+        user = getattr(request, "user", None)
+        if user is not None and getattr(user, "is_authenticated", False):
+            preferred = (getattr(user, "preferences", None) or {}).get("theme_mode")
+            if preferred in ("light", "dark", "system"):
+                mode = preferred
         return ResolvedTheme(
             brand_name=d["brand_name"],
             tagline=d["tagline"],
-            mode=d["mode"],
+            mode=mode,
             tokens=d["tokens"],
             dark_tokens=d["dark_tokens"],
         )

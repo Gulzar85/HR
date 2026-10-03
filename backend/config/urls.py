@@ -6,7 +6,8 @@ from apps.common.views.home import HomeView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
-    path("admin/", admin.site.urls),
+    path("django-admin/", admin.site.urls),  # fallback UI; business admin lives at /admin/
+    path("", include("apps.accounts.urls")),
     path("health/", include("apps.health.urls")),
     path("api/", include("apps.api.urls")),
 ]

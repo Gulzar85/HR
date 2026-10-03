@@ -28,3 +28,19 @@ def test_no_secret_key_in_source():
 
     text = (pathlib.Path(settings.BASE_DIR) / "config/settings/base.py").read_text()
     assert "django-insecure" not in text
+
+
+def test_templates_have_no_inline_style_or_handlers():
+    """The CSP forbids inline style attributes and event-handler attributes: keep templates clean."""
+    import pathlib
+    import re
+
+    from django.conf import settings
+
+    pattern = re.compile(r"""<[^<>]*\s(style|on[a-z]+)=["']""")
+    offenders = [
+        str(p)
+        for p in (pathlib.Path(settings.BASE_DIR) / "templates").rglob("*.html")
+        if pattern.search(p.read_text(encoding="utf-8"))
+    ]
+    assert not offenders, offenders

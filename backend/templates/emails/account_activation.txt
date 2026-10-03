@@ -1,0 +1,5 @@
+Hello {{ user.display_name }},
+
+An account was created for you on {{ brand_name }}. Set your password to activate it (link valid for one hour):
+
+{{ link }}

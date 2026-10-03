@@ -1,0 +1,31 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ profile.group.name }} · {{ theme.brand_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ profile.group.name }}</h1><p class="tight muted">{{ profile.description|default:"No description" }}</p></div>
+  <div class="actions">
+    {% if can_manage %}<a class="btn" href="{% url 'accounts:group_edit' profile.pk %}">Rename / edit</a>
+    <form method="post" action="{% url 'accounts:group_toggle' profile.pk %}" {% if profile.is_active %}data-confirm="Deactivate this group? Its permissions stop applying to members."{% endif %}>{% csrf_token %}<button type="submit" class="btn {% if profile.is_active %}btn-danger{% endif %}">{% if profile.is_active %}Deactivate{% else %}Activate{% endif %}</button></form>{% endif %}
+    {% if can_permissions %}<a class="btn btn-primary" href="{% url 'accounts:group_permissions' profile.pk %}">Edit permissions</a>{% endif %}
+  </div>
+</div>
+<section class="card"><h2>Status</h2>{% if profile.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge">Inactive</span>{% endif %}</section>
+<section class="card"><h2>Permissions</h2>
+  {% for pg in permission_groups %}{% for item in pg.items %}{% if item.checked %}<span class="chip-gap badge"><code>{{ item.label }}</code></span>{% endif %}{% endfor %}{% endfor %}
+  {% if not profile.group.permissions.all %}<p class="muted">No permissions assigned.</p>{% endif %}
+</section>
+<section class="card"><h2>Members ({{ member_total }})</h2>
+  {% if can_manage %}
+  <form method="post" action="{% url 'accounts:group_member_add' profile.pk %}" class="actions inline-form ems-form">
+    {% csrf_token %}
+    <div class="grow-wide"><label for="id_email">Add member by email</label><input type="email" name="email" id="id_email" required autocomplete="off"></div>
+    <button type="submit" class="btn btn-primary" data-loading>Add</button>
+  </form>
+  {% endif %}
+  <div class="table-wrap"><table class="table"><thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody>
+  {% for u in members %}<tr><td><a href="{% url 'accounts:user_detail' u.pk %}">{{ u.display_name }}</a></td><td>{{ u.email }}</td>
+    <td>{% if can_manage %}<form method="post" action="{% url 'accounts:group_member_remove' profile.pk u.pk %}" data-confirm="Remove {{ u.display_name }} from this group?">{% csrf_token %}<button type="submit" class="btn btn-sm btn-danger">Remove</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="3"><div class="empty-state">No members yet.</div></td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

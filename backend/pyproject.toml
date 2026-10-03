@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 dependencies = [
     "Django>=6.1,<6.2",
     "djangorestframework>=3.18,<4",
+    "djangorestframework-simplejwt>=5.5",
     "django-environ>=0.14",
     "psycopg[binary]>=3.3",
     "redis>=8.1",
@@ -41,7 +42,7 @@ packages = []
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.testing"
 pythonpath = ["."]
-testpaths = ["tests"]
+testpaths = ["tests", "apps"]
 addopts = "-ra --strict-markers --reuse-db"
 python_files = ["test_*.py"]
 
@@ -56,6 +57,8 @@ ignore = ["DJ001", "S101", "E501", "UP046", "UP047"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S105", "S106", "S311"]
+"apps/*/tests/**" = ["S105", "S106", "S311", "S101", "B017"]
+"conftest.py" = ["S105", "S106"]
 "config/settings/*" = ["S105"]
 "manage.py" = ["T20"]
 
@@ -68,6 +71,13 @@ plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 ignore_missing_imports = true
 check_untyped_defs = true
 exclude = ["migrations", "tests"]
+
+# Services/selectors/models are type-checked strictly. The HTTP adapters (views/forms/serializers)
+# deal with request.user being "User | AnonymousUser" and dynamic form fields, so a few
+# error classes are relaxed there (authorization is enforced at runtime and tested).
+[[tool.mypy.overrides]]
+module = ["apps.accounts.views.*", "apps.accounts.forms.*", "apps.accounts.api.*"]
+disable_error_code = ["arg-type", "union-attr", "attr-defined", "assignment", "var-annotated"]
 
 [tool.django-stubs]
 django_settings_module = "config.settings.development"

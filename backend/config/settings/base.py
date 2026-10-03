@@ -37,6 +37,8 @@ THIRD_PARTY_APPS = [
     "crispy_tailwind",
     "guardian",
     "import_export",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 # Dependency direction: common -> platform -> domain -> application -> web/api.
@@ -122,6 +124,11 @@ TEMPLATES = [
 
 # --- Database / cache -------------------------------------------------------
 DATABASES = {"default": env.db("DATABASE_URL")}
+if DATABASES["default"]["ENGINE"].endswith("sqlite3") and DATABASES["default"]["NAME"] not in (
+    "",
+    ":memory:",
+):
+    DATABASES["default"]["NAME"] = str(BASE_DIR / DATABASES["default"]["NAME"])  # cwd-independent
 DATABASES["default"]["ATOMIC_REQUESTS"] = False  # transactions are owned by services
 DATABASES["default"]["CONN_MAX_AGE"] = 60
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -133,7 +140,7 @@ CACHES = {
 
 # --- Auth -------------------------------------------------------------------
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
+    "apps.accounts.backends.IdentityBackend",  # email login; direct + group + role permissions
     "guardian.backends.ObjectPermissionBackend",  # object-level permissions
 ]
 ANONYMOUS_USER_NAME = None  # guardian: no anonymous DB user
@@ -146,7 +153,18 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-LOGIN_URL = "/accounts/login/"  # route added in Phase 1
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "accounts:login"
+PASSWORD_RESET_TIMEOUT = 60 * 60  # reset/activation links valid for 1 hour
+
+# Identity & security policy (docs/security/authentication.md)
+EMS_MAX_FAILED_LOGINS = env.int("EMS_MAX_FAILED_LOGINS", default=5)
+EMS_LOCKOUT_MINUTES = env.int("EMS_LOCKOUT_MINUTES", default=15)
+EMS_REMEMBER_ME_SECONDS = 60 * 60 * 24 * 7
+EMS_ADMIN_PAGE_SIZE = env.int("EMS_ADMIN_PAGE_SIZE", default=25)
+EMS_TRUSTED_PROXY_COUNT = env.int("EMS_TRUSTED_PROXY_COUNT", default=0)
+EMS_SITE_URL = env("EMS_SITE_URL", default="")  # used in e-mails when no request is available
 
 # --- I18N -------------------------------------------------------------------
 LANGUAGE_CODE = "en"
@@ -192,7 +210,9 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
-SESSION_COOKIE_AGE = 60 * 60 * 8
+SESSION_COOKIE_AGE = 60 * 60 * 8  # idle timeout (sliding, see SAVE_EVERY_REQUEST)
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # required: sessions are listed/revoked
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
@@ -224,8 +244,8 @@ REST_FRAMEWORK = {
     "DEFAULT_VERSION": "v1",
     "ALLOWED_VERSIONS": ["v1"],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
-        # Token/JWT authentication for Electron & mobile is selected in Phase 1.
+        "rest_framework_simplejwt.authentication.JWTAuthentication",  # Electron / mobile / integrations
+        "rest_framework.authentication.SessionAuthentication",  # browser clients (CSRF enforced)
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.StandardPagination",
@@ -235,9 +255,25 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "60/min", "user": "600/min"},
+    "DEFAULT_THROTTLE_RATES": {"anon": "60/min", "user": "600/min", "auth": "10/min"},
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "EXCEPTION_HANDLER": "apps.api.exceptions.api_exception_handler",
+}
+
+# --- API tokens (JWT access + rotating, revocable refresh) -------------------
+from datetime import timedelta  # noqa: E402
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int("JWT_ACCESS_MINUTES", default=15)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=env.int("JWT_REFRESH_DAYS", default=7)),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
 }
 
 # --- Celery (Redis) ---------------------------------------------------------
@@ -262,9 +298,10 @@ CELERY_BEAT_SCHEDULE = {
 EMS_THEME_DEFAULTS = {
     "brand_name": "McDonald's Pakistan EMS",
     "tagline": "Employee Management System",
-    "mode": "light",
+    "mode": "system",
     "tokens": {
         "color-primary": "#DA291C",
+        "color-on-primary": "#FFFFFF",
         "color-secondary": "#FFC72C",
         "color-accent": "#27251F",
         "color-background": "#F7F7F5",

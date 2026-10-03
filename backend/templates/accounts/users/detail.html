@@ -1,0 +1,95 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ target.display_name }} · {{ theme.brand_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ target.display_name }}</h1><p class="tight muted">{{ target.email }}</p></div>
+  <div class="actions">
+    {% if can_edit %}<a class="btn" href="{% url 'accounts:user_edit' target.pk %}"><i data-lucide="pencil" aria-hidden="true"></i> Edit</a>{% endif %}
+    {% if can_history %}<a class="btn" href="{% url 'accounts:user_security' target.pk %}"><i data-lucide="history" aria-hidden="true"></i> Security history</a>{% endif %}
+  </div>
+</div>
+
+<section class="card" aria-labelledby="h-identity">
+  <h2 id="h-identity">Identity</h2>
+  <dl class="kv">
+    <dt>Name</dt><dd>{{ target.get_full_name|default:"—" }}</dd>
+    <dt>Email</dt><dd>{{ target.email }}</dd>
+    <dt>Username</dt><dd>{{ target.username }}</dd>
+    <dt>Created</dt><dd>{{ target.date_joined|date:"d M Y H:i" }}</dd>
+    <dt>Last login</dt><dd>{% if target.last_login %}{{ target.last_login|date:"d M Y H:i" }}{% else %}Never{% endif %}</dd>
+  </dl>
+</section>
+
+<section class="card" aria-labelledby="h-status">
+  <h2 id="h-status">Account status</h2>
+  <p>{% include "components/status_badge.html" with status=target.status %}
+    {% if target.status_reason %}<span class="muted"> &mdash; {{ target.status_reason }}</span>{% endif %}
+    {% if target.status_changed_at %}<span class="muted"> (since {{ target.status_changed_at|date:"d M Y H:i" }})</span>{% endif %}</p>
+  {% if target.status == "locked" and target.locked_until %}<p class="muted">Automatically unlocks after {{ target.locked_until|date:"d M Y H:i" }}.</p>{% endif %}
+  {% if can_manage and not is_self %}
+  <div class="actions">
+    {% if target.status == "pending" or target.status == "suspended" or target.status == "inactive" %}
+    <form method="post" action="{% url 'accounts:user_status' target.pk %}">{% csrf_token %}<input type="hidden" name="action" value="activate"><button type="submit" class="btn btn-sm"><i data-lucide="user-check" aria-hidden="true"></i> Activate</button></form>
+    {% endif %}
+    {% if target.status == "locked" %}
+    <form method="post" action="{% url 'accounts:user_status' target.pk %}">{% csrf_token %}<input type="hidden" name="action" value="unlock"><button type="submit" class="btn btn-sm"><i data-lucide="lock-open" aria-hidden="true"></i> Unlock</button></form>
+    {% endif %}
+    {% if target.status == "active" %}
+    <form method="post" action="{% url 'accounts:user_status' target.pk %}" data-confirm="Suspend {{ target.display_name }}? They will be signed out immediately.">{% csrf_token %}<input type="hidden" name="action" value="suspend"><button type="submit" class="btn btn-sm"><i data-lucide="pause-circle" aria-hidden="true"></i> Suspend</button></form>
+    {% endif %}
+    {% if target.status != "inactive" %}
+    <form method="post" action="{% url 'accounts:user_status' target.pk %}" data-confirm="Deactivate {{ target.display_name }}? They will lose access and be signed out.">{% csrf_token %}<input type="hidden" name="action" value="deactivate"><button type="submit" class="btn btn-sm btn-danger"><i data-lucide="user-x" aria-hidden="true"></i> Deactivate</button></form>
+    {% endif %}
+  </div>
+  {% elif is_self %}<p class="muted">You cannot change your own account status.</p>{% endif %}
+</section>
+
+<section class="card" aria-labelledby="h-roles">
+  <h2 id="h-roles">Roles</h2>
+  <p>{% for r in target.roles.all %}<span class="badge {% if not r.is_active %}badge-warning{% endif %}">{{ r.name }}{% if not r.is_active %} (inactive){% endif %}</span> {% empty %}<span class="muted">No roles assigned.</span>{% endfor %}</p>
+  {% if can_manage and not is_self %}<a class="btn btn-sm" href="{% url 'accounts:user_roles' target.pk %}">Manage roles</a>{% endif %}
+  <h2 class="mt-5">Groups</h2>
+  <p>{% for g in target.groups.all %}<span class="badge">{{ g.name }}</span> {% empty %}<span class="muted">Not in any group.</span>{% endfor %}</p>
+  {% if can_manage and not is_self %}<a class="btn btn-sm" href="{% url 'accounts:user_groups' target.pk %}">Manage groups</a>{% endif %}
+  {% if can_manage %}
+  <details class="mt-4"><summary>Effective permissions ({{ effective_permissions|length }})</summary>
+    <ul class="plain-list check-list">{% for p in effective_permissions %}<li><code>{{ p }}</code></li>{% empty %}<li class="muted">None</li>{% endfor %}</ul>
+    {% if direct_permission_count %}<p class="muted">{{ direct_permission_count }} permission(s) are granted directly to this user.</p>{% endif %}
+  </details>
+  {% endif %}
+</section>
+
+<section class="card" aria-labelledby="h-scopes">
+  <h2 id="h-scopes">Access scopes</h2>
+  {% for s in scopes %}<span class="badge badge-info">{{ s.scope_type }}: {{ s.scope_ref }}</span> {% empty %}<span class="muted">No scopes granted.</span>{% endfor %}
+  {% if can_manage and not is_self %}<p><a class="btn btn-sm" href="{% url 'accounts:user_scopes' target.pk %}">Manage scopes</a></p>{% endif %}
+</section>
+
+{% if can_manage and not is_self %}
+<section class="card" aria-labelledby="h-security">
+  <h2 id="h-security">Security</h2>
+  <div class="actions">
+    <a class="btn btn-sm" href="{% url 'accounts:user_set_password' target.pk %}"><i data-lucide="key-round" aria-hidden="true"></i> Set password</a>
+    {% if target.status == "active" or target.status == "pending" or target.status == "locked" %}
+    <form method="post" action="{% url 'accounts:user_send_reset' target.pk %}" data-confirm="E-mail a password link to {{ target.email }}?">{% csrf_token %}<button type="submit" class="btn btn-sm"><i data-lucide="mail" aria-hidden="true"></i> {% if target.status == "pending" %}Resend activation link{% else %}Send reset link{% endif %}</button></form>
+    {% endif %}
+    <form method="post" action="{% url 'accounts:user_revoke_sessions' target.pk %}" data-confirm="Sign this user out of all devices?">{% csrf_token %}<button type="submit" class="btn btn-sm btn-danger"><i data-lucide="monitor-off" aria-hidden="true"></i> Revoke all sessions</button></form>
+  </div>
+</section>
+{% endif %}
+
+{% if can_history %}
+<section class="card" aria-labelledby="h-activity">
+  <h2 id="h-activity">Recent login activity</h2>
+  <div class="table-wrap"><table class="table"><thead><tr><th scope="col">When</th><th scope="col">Event</th><th scope="col">Result</th><th scope="col">IP</th></tr></thead><tbody>
+  {% for e in recent_logins %}<tr><td>{{ e.timestamp|date:"d M Y H:i" }}</td><td>{{ e.get_event_type_display }}</td><td>{% if e.success %}<span class="badge badge-success">OK</span>{% else %}<span class="badge badge-danger">Failed</span>{% endif %}</td><td>{{ e.ip_address|default:"—" }}</td></tr>
+  {% empty %}<tr><td colspan="4" class="muted">No activity yet.</td></tr>{% endfor %}
+  </tbody></table></div>
+  <h2 class="mt-5" id="h-audit">Audit history</h2>
+  <ul class="plain-list">
+  {% for a in recent_audit %}<li class="list-row"><span class="muted">{{ a.occurred_at|date:"d M Y H:i" }}</span> &middot; {{ a.action }}{% if a.actor %} <span class="muted">by {{ a.actor.display_name }}</span>{% endif %}</li>
+  {% empty %}<li class="muted">No audit entries.</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

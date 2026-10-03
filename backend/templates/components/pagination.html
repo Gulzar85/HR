@@ -1,0 +1,16 @@
+{% comment %}Expects page_obj, optional querystring (without page), optional htmx target id in `hx_target`.{% endcomment %}
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+  <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} &middot; {{ page_obj.paginator.count }} total</span>
+  <span class="actions">
+    {% if page_obj.has_previous %}
+    <a class="btn btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
+       {% if hx_target %}hx-get="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" hx-target="{{ hx_target }}" hx-push-url="true"{% endif %}>Previous</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a class="btn btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+       {% if hx_target %}hx-get="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" hx-target="{{ hx_target }}" hx-push-url="true"{% endif %}>Next</a>
+    {% endif %}
+  </span>
+</nav>
+{% endif %}

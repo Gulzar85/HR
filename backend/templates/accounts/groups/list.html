@@ -1,0 +1,16 @@
+{% extends "layouts/app.html" %}
+{% block title %}Groups · {{ theme.brand_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Groups</h1>
+  {% if can_manage %}<a class="btn btn-primary" href="{% url 'accounts:group_create' %}"><i data-lucide="plus" aria-hidden="true"></i> Create group</a>{% endif %}
+</div>
+<section class="card"><div class="table-wrap"><table class="table">
+  <thead><tr><th scope="col">Group</th><th scope="col">Status</th><th scope="col">Members</th><th scope="col">Permissions</th></tr></thead>
+  <tbody>
+  {% for g in groups %}<tr>
+    <td><a href="{% url 'accounts:group_detail' g.pk %}">{{ g.group.name }}</a><div class="muted">{{ g.description }}</div></td>
+    <td>{% if g.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge">Inactive</span>{% endif %}</td>
+    <td>{{ g.member_count }}</td><td>{{ g.permission_count }}</td></tr>
+  {% empty %}<tr><td colspan="4"><div class="empty-state"><i data-lucide="users-round" aria-hidden="true"></i><p>No groups yet.</p></div></td></tr>{% endfor %}
+  </tbody></table></div></section>
+{% endblock %}

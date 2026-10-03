@@ -1,0 +1,17 @@
+{% extends "layouts/app.html" %}
+{% block title %}Roles · {{ theme.brand_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Roles</h1>
+  {% if can_manage %}<a class="btn btn-primary" href="{% url 'accounts:role_create' %}"><i data-lucide="plus" aria-hidden="true"></i> Create role</a>{% endif %}
+</div>
+<section class="card"><div class="table-wrap"><table class="table">
+  <thead><tr><th scope="col">Role</th><th scope="col">Code</th><th scope="col">Status</th><th scope="col">Permissions</th><th scope="col">Users</th></tr></thead>
+  <tbody>
+  {% for r in roles %}<tr>
+    <td><a href="{% url 'accounts:role_detail' r.pk %}">{{ r.name }}</a>{% if r.is_system %} <span class="badge">system</span>{% endif %}<div class="muted">{{ r.description }}</div></td>
+    <td><code>{{ r.code }}</code></td>
+    <td>{% if r.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge">Inactive</span>{% endif %}</td>
+    <td>{{ r.permission_count }}</td><td>{{ r.user_count }}</td></tr>
+  {% empty %}<tr><td colspan="5"><div class="empty-state"><i data-lucide="shield" aria-hidden="true"></i><p>No roles yet. Run <code>python manage.py seed_identity</code> or create one.</p></div></td></tr>{% endfor %}
+  </tbody></table></div></section>
+{% endblock %}

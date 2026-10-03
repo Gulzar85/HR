@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.db.models import QuerySet
+from django.utils.cache import patch_vary_headers
 
 from apps.common.permissions import apply_scope
 
@@ -32,6 +33,14 @@ class HtmxTemplateMixin:
     htmx_template_name: str | None = None
 
     def get_template_names(self) -> list[str]:
-        if getattr(self.request, "htmx", False) and self.htmx_template_name:  # type: ignore[attr-defined]
+        htmx = getattr(self.request, "htmx", None)  # type: ignore[attr-defined]
+        if htmx and not htmx.history_restore_request and self.htmx_template_name:
             return [self.htmx_template_name]
         return super().get_template_names()  # type: ignore[misc]
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)  # type: ignore[misc]
+        patch_vary_headers(
+            response, ["HX-Request"]
+        )  # full page vs partial must not share a cache entry
+        return response

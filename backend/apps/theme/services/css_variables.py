@@ -20,7 +20,8 @@ def _decls(tokens: dict[str, str]) -> str:
 
 
 def render_css_variables(theme: ResolvedTheme) -> str:
-    css = f":root {{\n{_decls(theme.tokens)}\n}}\n"
+    scheme = {"light": "light", "dark": "dark"}.get(theme.mode, "light dark")
+    css = f":root {{\n{_decls(theme.tokens)}\n  color-scheme: {scheme};\n}}\n"
     dark = _decls(theme.dark_tokens)
     if dark and theme.mode in ("dark", "system"):
         if theme.mode == "dark":

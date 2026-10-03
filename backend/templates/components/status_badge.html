@@ -1,0 +1,5 @@
+{% if status == "active" %}<span class="badge badge-success">Active</span>
+{% elif status == "pending" %}<span class="badge badge-info">Pending activation</span>
+{% elif status == "suspended" %}<span class="badge badge-warning">Suspended</span>
+{% elif status == "locked" %}<span class="badge badge-danger">Locked</span>
+{% else %}<span class="badge">Inactive</span>{% endif %}

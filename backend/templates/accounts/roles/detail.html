@@ -1,0 +1,21 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ role.name }} · {{ theme.brand_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ role.name }}</h1><p class="tight muted"><code>{{ role.code }}</code> &middot; {{ role.description|default:"No description" }}</p></div>
+  <div class="actions">
+    {% if can_manage %}<a class="btn" href="{% url 'accounts:role_edit' role.pk %}">Edit</a>
+    <form method="post" action="{% url 'accounts:role_toggle' role.pk %}" {% if role.is_active %}data-confirm="Deactivate this role? Its permissions stop applying to all users holding it."{% endif %}>{% csrf_token %}<button type="submit" class="btn {% if role.is_active %}btn-danger{% endif %}">{% if role.is_active %}Deactivate{% else %}Activate{% endif %}</button></form>{% endif %}
+    {% if can_permissions %}<a class="btn btn-primary" href="{% url 'accounts:role_permissions' role.pk %}">Edit permissions</a>{% endif %}
+  </div>
+</div>
+<section class="card"><h2>Status</h2>{% if role.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge">Inactive</span>{% endif %}</section>
+<section class="card"><h2>Assigned permissions</h2>
+  {% for group in permission_groups %}{% for item in group.items %}{% if item.checked %}<span class="chip-gap badge"><code>{{ item.label }}</code></span>{% endif %}{% endfor %}{% endfor %}
+  {% if not role.permissions.all %}<p class="muted">No permissions assigned.</p>{% endif %}
+</section>
+<section class="card"><h2>Users with this role ({{ role_user_total }})</h2>
+  <ul class="plain-list">{% for u in role_users %}<li class="py-1"><a href="{% url 'accounts:user_detail' u.pk %}">{{ u.display_name }}</a> <span class="muted">{{ u.email }}</span></li>{% empty %}<li class="muted">No users.</li>{% endfor %}</ul>
+  {% if role_user_total > 50 %}<p class="muted">Showing the first 50.</p>{% endif %}
+</section>
+{% endblock %}

@@ -17,6 +17,8 @@ def record_audit(
     obj_id: str = "",
     changes: dict[str, Any] | None = None,
     ip_address: str | None = None,
+    user_agent: str = "",
+    reason: str = "",
 ) -> AuditLog:
     """Write an audit row (call inside the business transaction) and emit an audit log line."""
     entry = AuditLog.objects.create(
@@ -26,6 +28,8 @@ def record_audit(
         object_id=str(obj_id),
         changes=changes or {},
         ip_address=ip_address,
+        user_agent=user_agent[:400],
+        reason=reason[:255],
     )
     logger.info(
         "audit", extra={"action": action, "object_type": obj_type, "object_id": str(obj_id)}

@@ -13,9 +13,10 @@
 | django-crispy-forms, crispy-tailwind | Tailwind form rendering |
 | django-guardian | Object-level permissions |
 | django-csp | Content-Security-Policy |
+| djangorestframework-simplejwt (Phase 1) | JWT access + rotating/blacklistable refresh tokens for Electron/mobile (ADR-011); includes the `token_blacklist` app for revocation |
 | django-import-export | Bulk import (Phase 18) |
 | whitenoise | Static files in production |
 | Dev: pytest, pytest-django, ruff, mypy, django-stubs, djangorestframework-stubs | Tests, lint+format+import sort, typing |
 | npm (build only): tailwindcss, @tailwindcss/cli, htmx.org, @alpinejs/csp, lucide, apexcharts | Vendored into `static/` by `npm run vendor` / `build:css` |
 
-Deliberately not added: drf-spectacular, JWT library (decided in Phase 1), Elasticsearch/OpenSearch.
+Deliberately not added: drf-spectacular, Elasticsearch/OpenSearch, an MFA library (deferred), Pillow (profile images deferred).

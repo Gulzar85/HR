@@ -1,7 +1,12 @@
-{% extends "base.html" %}
+{% extends request.user.is_authenticated|yesno:"layouts/app.html,base.html" %}
 {% block content %}
 <section class="ems-card">
   <h1>{{ theme.brand_name }}</h1>
-  <p class="ems-muted">{{ theme.tagline }} &mdash; Phase 0 foundation.</p>
+  <p class="ems-muted">{{ theme.tagline }}</p>
+  {% if user.is_authenticated %}
+  <p>Signed in as <strong>{{ user.display_name }}</strong>.</p>
+  {% else %}
+  <a class="btn btn-primary" href="{% url 'accounts:login' %}">Sign in</a>
+  {% endif %}
 </section>
 {% endblock %}

@@ -38,6 +38,12 @@ class ValidationException(DomainException):
     http_status = 400
 
 
+class AuthenticationFailedException(DomainException):
+    default_message = "Authentication failed."
+    default_code = "authentication_failed"
+    http_status = 401
+
+
 class PermissionDeniedException(DomainException):
     default_message = "You do not have permission to perform this action."
     default_code = "permission_denied"

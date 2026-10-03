@@ -19,6 +19,14 @@ npm install; npm run vendor; npm run build:css   # front-end assets
 ```
 PostgreSQL: `createdb mcd_ems` and set `DATABASE_URL=postgres://user:pass@localhost:5432/mcd_ems`. (`sqlite:///db.sqlite3` works for quick local runs.)
 
+## Identity & access (Phase 1)
+```powershell
+python manage.py migrate
+python manage.py seed_identity            # example roles (editable in the UI)
+python manage.py createsuperuser          # first administrator (email + username + password)
+```
+Sign in at `/accounts/login/` (email + password). Administration UI: `/admin/users/`, `/admin/roles/`, `/admin/groups/`; self-service `/profile/`, `/profile/sessions/`. Django admin (fallback) moved to `/django-admin/`. API: `/api/v1/auth/token/` (JWT). See `../docs/architecture/identity-and-access.md`, `../docs/security/`, `../docs/api/authentication.md`.
+
 ## Run
 ```powershell
 python manage.py migrate
@@ -40,5 +48,7 @@ celery -A config beat -l info                  # schedules outbox dispatch
 
 ## Architectural rules
 1. CBVs only for web views. 2. Writes in services (`transaction.atomic`), reads in selectors. 3. UUID PKs + immutable business codes. 4. User ≠ Employee; Candidate ≠ Employee. 5. Electron uses only the REST API. 6. No hard-coded brand colors; use theme tokens. 7. Dependencies flow common → platform → domain → services → web/api. 8. Schema changes only via migrations. 9. Logging via `ems.*` loggers, never `print`.
+
+Status: Phase 0 (foundation) and Phase 1 (identity, authentication, RBAC, user administration) complete.
 
 Roadmap: `../docs/architecture/phase-roadmap.md`. Each phase is committed and pushed on completion.

@@ -1,0 +1,23 @@
+{% extends "layouts/app.html" %}
+{% block title %}Permissions · {{ theme.brand_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Permissions &middot; {{ subject }}</h1></div>
+<p class="muted">Permissions are business capabilities (<code>app.action_noun</code>). You can only grant permissions that you hold yourself.</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors or form.errors %}<div class="alert alert-error" role="alert">{% for e in form.non_field_errors %}{{ e }} {% endfor %}{% if form.permissions.errors %}{{ form.permissions.errors }}{% endif %}</div>{% endif %}
+  {% for group in permission_groups %}
+  <fieldset class="perm-group" x-data="permGroup">
+    <legend>{{ group.title }}</legend>
+    <label class="perm-item"><input type="checkbox" @change="toggleAll" aria-label="Select all in {{ group.title }}"> <em class="muted">Select all</em></label>
+    {% for item in group.items %}
+    <label class="perm-item"><input type="checkbox" name="permissions" value="{{ item.id }}" {% if item.checked %}checked{% endif %}> {{ item.name }} <code class="muted">{{ item.label }}</code></label>
+    {% endfor %}
+  </fieldset>
+  {% empty %}<div class="empty-state">No assignable permissions yet.</div>{% endfor %}
+  <div class="actions mt-4 sticky-actions">
+    <button type="submit" class="btn btn-primary" data-loading>{{ submit_label }}</button>
+    <a class="btn" href="{{ cancel_url }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
