@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.accounts.models import AccountEvent, GroupProfile, Role, UserScope
 from apps.accounts.seed import seed_roles
 from apps.accounts.services import PermissionService, RoleService, ScopeService, register_scope_type
-from apps.accounts.services.scope_service import registered_scope_types
+from apps.accounts.services.scope_service import registered_scope_types, restore_scope_type
 from apps.audit.models import AuditLog
 from apps.common.exceptions import (
     BusinessRuleException,
@@ -183,16 +183,30 @@ def test_cannot_add_to_inactive_group(admin_user, make_user):
 
 
 # ----------------------------------------------------------------------------- scopes
+# Generic scope mechanics are tested with test-only scope types ("zone" > "sector" > "site") so they
+# stay independent of the Organization domain, which registers the real types with validators.
+
+
+@pytest.fixture(autouse=True)
+def _test_scope_types():
+    for name in ("zone", "sector", "site"):
+        register_scope_type(name, name.title())
+    yield
+    from apps.accounts.services import scope_service
+
+    for name in ("zone", "sector", "site"):
+        scope_service._REGISTRY.pop(name, None)
+
 def test_grant_and_revoke_scope(admin_user, make_user):
     target = make_user()
     scope = ScopeService.grant_scope(
-        actor=_super(make_user), user=target, scope_type="region", scope_ref="REG-001"
+        actor=_super(make_user), user=target, scope_type="zone", scope_ref="REG-001"
     )
-    assert ScopeService.has_scope(target, "region", "REG-001")
-    assert not ScopeService.has_scope(target, "region", "REG-002")
+    assert ScopeService.has_scope(target, "zone", "REG-001")
+    assert not ScopeService.has_scope(target, "zone", "REG-002")
     assert AccountEvent.objects.filter(user=target, event_type="scope_granted").exists()
     ScopeService.revoke_scope(actor=_super(make_user), user=target, scope_id=scope.pk)
-    assert not ScopeService.has_scope(target, "region", "REG-001")
+    assert not ScopeService.has_scope(target, "zone", "REG-001")
     assert AccountEvent.objects.filter(user=target, event_type="scope_revoked").exists()
 
 
@@ -205,23 +219,23 @@ def test_scope_validation(make_user):
     with pytest.raises(ValidationException):
         ScopeService.grant_scope(actor=su, user=target, scope_type="galaxy", scope_ref="x")
     with pytest.raises(ValidationException):
-        ScopeService.grant_scope(actor=su, user=target, scope_type="region", scope_ref="")
+        ScopeService.grant_scope(actor=su, user=target, scope_type="zone", scope_ref="")
     with pytest.raises(ValidationException):
-        ScopeService.grant_scope(actor=su, user=target, scope_type="region", scope_ref="*")
+        ScopeService.grant_scope(actor=su, user=target, scope_type="zone", scope_ref="*")
     g = ScopeService.grant_scope(actor=su, user=target, scope_type="global", scope_ref="anything")
     assert g.scope_ref == "*"
 
 
 def test_scope_registry_supports_phase2_validators(make_user):
     su, target = _super(make_user), make_user()
-    original = registered_scope_types()["area"]
+    original = registered_scope_types()["sector"]
     try:
-        register_scope_type("area", "Area", validator=lambda ref: ref.startswith("AREA-"))
+        register_scope_type("sector", "Sector", validator=lambda ref: ref.startswith("AREA-"))
         with pytest.raises(ValidationException):
-            ScopeService.grant_scope(actor=su, user=target, scope_type="area", scope_ref="bogus")
-        ScopeService.grant_scope(actor=su, user=target, scope_type="area", scope_ref="AREA-LHR-001")
+            ScopeService.grant_scope(actor=su, user=target, scope_type="sector", scope_ref="bogus")
+        ScopeService.grant_scope(actor=su, user=target, scope_type="sector", scope_ref="AREA-LHR-001")
     finally:
-        register_scope_type("area", original.label)
+        restore_scope_type(original)
 
 
 def test_scope_cannot_be_self_granted_or_exceed_actor(make_user):
@@ -230,20 +244,20 @@ def test_scope_cannot_be_self_granted_or_exceed_actor(make_user):
     with pytest.raises(PermissionDeniedException):
         ScopeService.grant_scope(actor=manager, user=manager, scope_type="global", scope_ref="*")
     with pytest.raises(PermissionDeniedException):  # manager holds no scopes at all
-        ScopeService.grant_scope(actor=manager, user=other, scope_type="region", scope_ref="REG-9")
+        ScopeService.grant_scope(actor=manager, user=other, scope_type="zone", scope_ref="REG-9")
     ScopeService.grant_scope(
-        actor=_super(make_user), user=manager, scope_type="region", scope_ref="REG-9"
+        actor=_super(make_user), user=manager, scope_type="zone", scope_ref="REG-9"
     )
     ScopeService.grant_scope(
-        actor=manager, user=other, scope_type="region", scope_ref="REG-9"
+        actor=manager, user=other, scope_type="zone", scope_ref="REG-9"
     )  # within own
     with pytest.raises(PermissionDeniedException):
-        ScopeService.grant_scope(actor=manager, user=other, scope_type="region", scope_ref="REG-8")
+        ScopeService.grant_scope(actor=manager, user=other, scope_type="zone", scope_ref="REG-8")
 
 
 def test_revoke_scope_is_bound_to_user(make_user):
     su, a, b = _super(make_user), make_user(), make_user()
-    scope = ScopeService.grant_scope(actor=su, user=a, scope_type="region", scope_ref="R1")
+    scope = ScopeService.grant_scope(actor=su, user=a, scope_type="zone", scope_ref="R1")
     with pytest.raises(NotFoundException):  # scope id of A cannot be revoked through B (IDOR)
         ScopeService.revoke_scope(actor=su, user=b, scope_id=scope.pk)
     assert UserScope.objects.filter(pk=scope.pk).exists()
@@ -254,28 +268,28 @@ def test_expired_scope_is_ignored(make_user):
     ScopeService.grant_scope(
         actor=su,
         user=target,
-        scope_type="region",
+        scope_type="zone",
         scope_ref="R1",
         expires_at=timezone.now() - timedelta(days=1),
     )
-    assert not ScopeService.can_access_scope(target, "region", "R1")
+    assert not ScopeService.can_access_scope(target, "zone", "R1")
 
 
 def test_descendant_resolution_via_registered_expander(make_user):
     su, target = _super(make_user), make_user()
     tree = {
-        "REG-1": [("area", "AREA-1"), ("restaurant", "RST-1")],
-        "AREA-1": [("restaurant", "RST-1")],
+        "REG-1": [("sector", "AREA-1"), ("site", "RST-1")],
+        "AREA-1": [("site", "RST-1")],
     }
-    original = registered_scope_types()["region"]
+    original = registered_scope_types()["zone"]
     try:
-        register_scope_type("region", "Region", descendants=lambda ref: tree.get(ref, []))
-        ScopeService.grant_scope(actor=su, user=target, scope_type="region", scope_ref="REG-1")
-        assert ScopeService.can_access_scope(target, "restaurant", "RST-1")
-        assert not ScopeService.can_access_scope(target, "restaurant", "RST-2")
-        assert ScopeService.accessible_refs(target)["restaurant"] == {"RST-1"}
+        register_scope_type("zone", "Zone", descendants=lambda ref: tree.get(ref, []))
+        ScopeService.grant_scope(actor=su, user=target, scope_type="zone", scope_ref="REG-1")
+        assert ScopeService.can_access_scope(target, "site", "RST-1")
+        assert not ScopeService.can_access_scope(target, "site", "RST-2")
+        assert ScopeService.accessible_refs(target)["site"] == {"RST-1"}
     finally:
-        register_scope_type("region", original.label)
+        restore_scope_type(original)
 
 
 def test_filter_queryset_by_scope_fails_closed(make_user):
@@ -283,12 +297,12 @@ def test_filter_queryset_by_scope_fails_closed(make_user):
     su, target, nobody = _super(make_user), make_user(), make_user()
     for n in ("G-A", "G-B", "G-C"):
         Group.objects.create(name=n)
-    lookups = {"restaurant": "name"}
+    lookups = {"site": "name"}
     qs = Group.objects.all()
     assert (
         ScopeService.filter_queryset_by_scope(nobody, qs, lookups).count() == 0
     )  # no scope: nothing
-    ScopeService.grant_scope(actor=su, user=target, scope_type="restaurant", scope_ref="G-B")
+    ScopeService.grant_scope(actor=su, user=target, scope_type="site", scope_ref="G-B")
     assert set(
         ScopeService.filter_queryset_by_scope(target, qs, lookups).values_list("name", flat=True)
     ) == {"G-B"}
@@ -296,8 +310,8 @@ def test_filter_queryset_by_scope_fails_closed(make_user):
     assert ScopeService.filter_queryset_by_scope(nobody, qs, lookups).count() == 3
     assert ScopeService.filter_queryset_by_scope(su, qs, lookups).count() == 3  # superuser
     # a scope type without a lookup for this model grants nothing
-    ScopeService.grant_scope(actor=su, user=target, scope_type="area", scope_ref="G-A")
-    assert ScopeService.filter_queryset_by_scope(target, qs, {"area": "name"}).count() == 1
+    ScopeService.grant_scope(actor=su, user=target, scope_type="sector", scope_ref="G-A")
+    assert ScopeService.filter_queryset_by_scope(target, qs, {"sector": "name"}).count() == 1
 
 
 # ------------------------------------------------------------------ object permissions

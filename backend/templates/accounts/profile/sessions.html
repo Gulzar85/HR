@@ -1,14 +1,25 @@
 {% extends "layouts/app.html" %}
 {% block title %}Sessions · {{ theme.brand_name }}{% endblock %}
+{% block heading %}Active sessions{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">Devices currently signed in to your account.</p>{% endblock %}
 {% block content %}
-<div class="page-head"><h1>Active sessions</h1></div>
-<section class="card"><div class="table-wrap"><table class="table">
-  <thead><tr><th scope="col">Device</th><th scope="col">IP address</th><th scope="col">Signed in</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
-  <tbody>
-  {% for s in sessions %}<tr>
-    <td>{{ s.user_agent|default:"Unknown device"|truncatechars:70 }}{% if s.session_key == current_key %} <span class="badge badge-success">This session</span>{% endif %}</td>
-    <td>{% if s.ip_address %}{{ s.ip_address }}{% else %}&mdash;{% endif %}</td><td>{{ s.created_at|date:"d M Y H:i" }}</td>
-    <td>{% if s.session_key != current_key %}<form method="post" action="{% url 'accounts:session_revoke' s.pk %}" data-confirm="Sign out this device?">{% csrf_token %}<button type="submit" class="btn btn-sm btn-danger">Revoke</button></form>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="4"><div class="empty-state">No active sessions.</div></td></tr>{% endfor %}
-  </tbody></table></div></section>
+<section class="card">
+  <div class="card-body flush table-wrap">
+    <table class="table">
+      <thead><tr><th scope="col">Device</th><th scope="col">IP address</th><th scope="col">Signed in</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+      {% for s in sessions %}
+        <tr>
+          <td>{{ s.user_agent|default:"Unknown device"|truncatechars:80 }}{% if s.session_key == current_key %} <span class="badge badge-success">This device</span>{% endif %}</td>
+          <td>{{ s.ip_address|default:"—" }}</td>
+          <td class="nowrap">{{ s.created_at|date:"d M Y H:i" }}</td>
+          <td class="actions">{% if s.session_key != current_key %}{% url 'accounts:session_revoke' s.pk as revoke_url %}{% include "components/post_button.html" with url=revoke_url label="Sign out" css="btn-sm btn-danger" confirm="Sign out this device?" %}{% endif %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">{% include "components/empty.html" with icon="monitor" text="No active sessions." %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}

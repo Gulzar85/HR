@@ -6,21 +6,15 @@
   <meta name="htmx-config" content='{"allowEval":false,"includeIndicatorStyles":false}'>
   <title>{% block title %}{{ theme.brand_name }}{% endblock %}</title>
   <link rel="icon" href="{{ theme_favicon_url }}">
-  {# Semantic design tokens (--color-primary, ...) come from the Theme Engine; never hard-code brand colors. #}
+  {# Semantic design tokens (--color-*) come from the Theme Engine. Never hard-code brand colours. #}
   <style nonce="{{ CSP_NONCE }}">{{ theme_css|safe }}</style>
   <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
   <link rel="stylesheet" href="{% static 'css/ems.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
-<body class="ems-body" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body class="ems" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <a href="#main" class="skip-link">Skip to content</a>
-  {% block header %}
-  <header class="ems-header">
-    <img src="{{ theme_logo_url }}" alt="" class="ems-logo">
-    <span class="ems-brand">{{ theme.brand_name }}</span>
-  </header>
-  {% endblock %}
-  {% block body %}<main id="main" class="ems-main">{% block content %}{% endblock %}</main>{% endblock %}
+  {% block body %}{% endblock %}
   <script src="{% static 'js/ems.js' %}" nonce="{{ CSP_NONCE }}" defer></script>
   <script src="{% static 'js/vendor/htmx.min.js' %}" nonce="{{ CSP_NONCE }}" defer></script>
   <script src="{% static 'js/vendor/lucide.min.js' %}" nonce="{{ CSP_NONCE }}" defer></script>

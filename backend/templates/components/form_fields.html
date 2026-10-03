@@ -1,0 +1,10 @@
+{% load crispy_forms_tags %}
+{% comment %}Server-rendered form body: accessible labels, field + non-field errors. Expects `form`.{% endcomment %}
+<div class="form">
+  {% if form.non_field_errors %}
+  <div class="alert alert-error" role="alert"><i data-lucide="circle-alert" aria-hidden="true"></i>
+    <div>{% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}</div>
+  </div>
+  {% endif %}
+  {{ form|crispy }}
+</div>

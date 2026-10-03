@@ -1,3 +1,13 @@
+<!doctype html>
+<html lang="en"><body>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<table role="presentation" width="560" cellpadding="24" cellspacing="0">
+<tr><td>
+<p><strong>{{ brand_name }}</strong></p>
 <p>Hello {{ user.display_name }},</p>
-<p>An account was created for you on {{ brand_name }}. Set your password to activate it (link valid for one hour):</p>
+<p>An account has been created for you. Choose a password to activate it (link valid for one hour):</p>
 <p><a href="{{ link }}">Activate your account</a></p>
+<p>&mdash; {{ brand_name }}</p>
+<p><small>This is an automated message. Do not reply.</small></p>
+</td></tr></table></td></tr></table>
+</body></html>

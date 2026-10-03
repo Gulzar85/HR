@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% comment %}Unauthenticated pages (sign-in, password reset). Blocks: title, card.{% endcomment %}
+{% block body %}
+<div class="auth">
+  <section class="auth-aside" aria-hidden="true">
+    <div class="brand">
+      <span class="brand-logo"><img src="{{ theme_logo_url }}" alt=""></span>
+      <span class="brand-name">{{ theme.brand_name }}</span>
+    </div>
+    <div>
+      <h2>{{ theme.tagline }}</h2>
+      <p>People, organization and HR processes in one secure place.</p>
+    </div>
+    <p class="small">Authorised use only. Activity is logged.</p>
+  </section>
+  <main id="main" class="auth-panel">
+    <div class="auth-card stack">
+      <a class="brand" href="{% url 'home' %}">
+        <span class="brand-logo"><img src="{{ theme_logo_url }}" alt=""></span>
+        <span class="brand-name">{{ theme.brand_name }}</span>
+      </a>
+      {% include "components/messages.html" %}
+      {% block card %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}

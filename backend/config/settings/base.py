@@ -117,6 +117,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "csp.context_processors.nonce",
                 "apps.theme.context_processors.theme",
+                "apps.common.navigation.context_processor",
             ],
         },
     },

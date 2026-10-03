@@ -1,9 +1,14 @@
 {% extends "base.html" %}
-{% block title %}{{ status }}{% endblock %}
-{% block content %}
-<section class="ems-card">
-  <h1>{{ status }}</h1>
-  <p>{{ error.message }}</p>
-  <a href="/">Back to home</a>
-</section>
+{% block title %}{{ status }} · {{ theme.brand_name }}{% endblock %}
+{% block body %}
+<main id="main" class="error-page">
+  <div class="stack">
+    <div class="error-code">{{ status }}</div>
+    <h1>{% if status == 403 %}Not allowed{% elif status == 404 %}Not found{% else %}Request could not be completed{% endif %}</h1>
+    <p class="muted">{{ error.message }}</p>
+    <div class="cluster cluster-end">
+      <a class="btn btn-primary" href="/">Home</a>
+    </div>
+  </div>
+</main>
 {% endblock %}

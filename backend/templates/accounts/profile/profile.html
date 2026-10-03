@@ -1,20 +1,28 @@
 {% extends "layouts/app.html" %}
 {% block title %}Profile · {{ theme.brand_name }}{% endblock %}
+{% block heading %}My profile{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">{{ user.email }}</p>{% endblock %}
 {% block content %}
-<div class="page-head"><h1>My profile</h1></div>
-<section class="narrow card">
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {% include "components/form.html" %}
-    <div class="actions mt-4"><button type="submit" class="btn btn-primary" data-loading>Save changes</button></div>
-  </form>
-</section>
-<section class="narrow card">
-  <h2>Security</h2>
-  <div class="actions">
-    <a class="btn" href="{% url 'accounts:password_change' %}"><i data-lucide="key-round" aria-hidden="true"></i> Change password</a>
-    <a class="btn" href="{% url 'accounts:sessions' %}"><i data-lucide="monitor-smartphone" aria-hidden="true"></i> Active sessions</a>
-  </div>
-  <p class="muted">Roles, permissions and access scopes can only be changed by an administrator.</p>
-</section>
+<div class="grid grid-2">
+  <section class="card">
+    <div class="card-header"><h2>Details &amp; appearance</h2></div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "components/form_fields.html" %}
+        <div class="form-actions"><button type="submit" class="btn btn-primary" data-loading>Save changes</button></div>
+      </form>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h2>Security</h2></div>
+    <div class="card-body stack">
+      <div class="cluster">
+        <a class="btn" href="{% url 'accounts:password_change' %}"><i data-lucide="key-round" aria-hidden="true"></i>Change password</a>
+        <a class="btn" href="{% url 'accounts:sessions' %}"><i data-lucide="monitor-smartphone" aria-hidden="true"></i>Active sessions</a>
+      </div>
+      <p class="muted small mb-0">Roles, permissions and access scopes can only be changed by an administrator.</p>
+    </div>
+  </section>
+</div>
 {% endblock %}

@@ -1,15 +1,13 @@
-{% comment %}Expects page_obj, optional querystring (without page), optional htmx target id in `hx_target`.{% endcomment %}
+{% comment %}Expects page_obj; optional querystring (without page) and hx_target for HTMX partial paging.{% endcomment %}
 {% if page_obj and page_obj.paginator.num_pages > 1 %}
 <nav class="pagination" aria-label="Pagination">
-  <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} &middot; {{ page_obj.paginator.count }} total</span>
-  <span class="actions">
+  <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} &middot; {{ page_obj.paginator.count }} records</span>
+  <span class="cluster">
     {% if page_obj.has_previous %}
-    <a class="btn btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
-       {% if hx_target %}hx-get="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" hx-target="{{ hx_target }}" hx-push-url="true"{% endif %}>Previous</a>
+    <a class="btn btn-sm" rel="prev" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"{% if hx_target %} hx-get="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" hx-target="{{ hx_target }}" hx-push-url="true"{% endif %}><i data-lucide="chevron-left" aria-hidden="true"></i>Previous</a>
     {% endif %}
     {% if page_obj.has_next %}
-    <a class="btn btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
-       {% if hx_target %}hx-get="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" hx-target="{{ hx_target }}" hx-push-url="true"{% endif %}>Next</a>
+    <a class="btn btn-sm" rel="next" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"{% if hx_target %} hx-get="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" hx-target="{{ hx_target }}" hx-push-url="true"{% endif %}>Next<i data-lucide="chevron-right" aria-hidden="true"></i></a>
     {% endif %}
   </span>
 </nav>

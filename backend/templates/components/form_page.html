@@ -1,0 +1,13 @@
+{% comment %}Card containing a POST form. Params: submit_label, cancel_url, sticky (bool).{% endcomment %}
+<section class="card w-narrow">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "components/form_fields.html" %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" data-loading>{{ submit_label|default:"Save" }}</button>
+        {% if cancel_url %}<a class="btn" href="{{ cancel_url }}">Cancel</a>{% endif %}
+      </div>
+    </form>
+  </div>
+</section>

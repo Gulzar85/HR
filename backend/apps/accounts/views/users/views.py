@@ -100,6 +100,7 @@ class UserDetailView(UserObjectMixin, AdminAccessMixin, DetailView):
         can_manage = PermissionService.can(viewer, MANAGE_USERS)
         data.update(
             scopes=UserSelector.scopes_for(target),
+            resolved_scopes=ScopeService.resolve_user_organization_scopes(target),
             can_manage=can_manage,
             can_edit=PermissionService.can(viewer, CHANGE_USER),
             can_history=can_history,
@@ -273,7 +274,10 @@ class UserScopesView(UserObjectMixin, ServiceFormView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        data.update(target=self.get_target(), scopes=UserSelector.scopes_for(self.get_target()))
+        data.update(
+            target=self.get_target(),
+            resolved_scopes=ScopeService.resolve_user_organization_scopes(self.get_target()),
+        )
         return data
 
     def perform(self, form):

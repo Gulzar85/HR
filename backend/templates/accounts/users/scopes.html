@@ -1,20 +1,41 @@
 {% extends "layouts/app.html" %}
 {% block title %}Access scopes · {{ theme.brand_name }}{% endblock %}
+{% block heading %}Access scopes{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">{{ target.display_name }} &middot; where this user's permissions apply. No scope means no scoped data.</p>{% endblock %}
 {% block content %}
-<div class="page-head"><h1>Access scopes: {{ target.display_name }}</h1></div>
 <section class="card">
-  <h2>Granted scopes</h2>
-  {% if scopes %}
-  <div class="table-wrap"><table class="table"><thead><tr><th scope="col">Type</th><th scope="col">Reference</th><th scope="col">Includes below</th><th scope="col">Granted</th><th scope="col">Expires</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody>
-  {% for s in scopes %}<tr><td>{{ s.scope_type }}</td><td>{{ s.scope_ref }}</td><td>{{ s.include_descendants|yesno:"Yes,No" }}</td><td>{{ s.granted_at|date:"d M Y" }}</td><td>{% if s.expires_at %}{{ s.expires_at|date:"d M Y H:i" }}{% else %}Never{% endif %}</td>
-    <td><form method="post" action="{% url 'accounts:user_scope_revoke' target.pk s.pk %}" data-confirm="Revoke this scope?">{% csrf_token %}<button type="submit" class="btn btn-sm btn-danger">Revoke</button></form></td></tr>{% endfor %}
-  </tbody></table></div>
-  {% else %}<div class="empty-state"><i data-lucide="map-pin-off" aria-hidden="true"></i><p>No scopes granted. Without a scope the user sees no scoped data.</p></div>{% endif %}
+  <div class="card-header"><h2>Granted scopes</h2></div>
+  <div class="card-body flush table-wrap">
+    <table class="table">
+      <thead><tr><th scope="col">Type</th><th scope="col">Organization unit</th><th scope="col">Includes units below</th><th scope="col">Granted</th><th scope="col">Expires</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+      {% for s in resolved_scopes %}
+        <tr>
+          <td>{{ s.type_label }}</td>
+          <td><span class="cell-title">{{ s.display }}</span><span class="cell-sub">{{ s.ref }}</span></td>
+          <td>{{ s.include_descendants|yesno:"Yes,No" }}</td>
+          <td class="nowrap">{{ s.granted_at|date:"d M Y" }}</td>
+          <td class="nowrap">{% if s.expires_at %}{{ s.expires_at|date:"d M Y H:i" }}{% else %}Never{% endif %}</td>
+          <td class="actions">{% url 'accounts:user_scope_revoke' target.pk s.id as revoke_url %}{% include "components/post_button.html" with url=revoke_url label="Revoke" css="btn-sm btn-danger" confirm="Revoke this scope?" %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">{% include "components/empty.html" with icon="map-pin-off" text="No scopes granted." %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </section>
-<section class="narrow card">
-  <h2>Grant a scope</h2>
-  <form method="post" novalidate>{% csrf_token %}{% include "components/form.html" %}
-    <button type="submit" class="btn btn-primary" data-loading>Grant scope</button> <a class="btn" href="{% url 'accounts:user_detail' target.pk %}">Back</a>
-  </form>
+<section class="card w-narrow">
+  <div class="card-header"><h2>Grant a scope</h2></div>
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "components/form_fields.html" %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" data-loading>Grant scope</button>
+        <a class="btn" href="{% url 'accounts:user_detail' target.pk %}">Back to user</a>
+      </div>
+    </form>
+  </div>
 </section>
 {% endblock %}

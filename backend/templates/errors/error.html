@@ -1,9 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ status }} {{ title }}{% endblock %}
-{% block content %}
-<section class="ems-card">
-  <h1>{{ status }} &middot; {{ title }}</h1>
-  <p class="ems-muted">{{ message }}</p>
-  <a href="/">Back to home</a>
-</section>
+{% block title %}{{ status }} · {{ title }}{% endblock %}
+{% block body %}
+<main id="main" class="error-page">
+  <div class="stack">
+    <div class="error-code">{{ status }}</div>
+    <h1>{{ title }}</h1>
+    <p class="muted">{{ message }}</p>
+    <div class="cluster cluster-end"><a class="btn btn-primary" href="/"><i data-lucide="house" aria-hidden="true"></i>Back to home</a></div>
+  </div>
+</main>
 {% endblock %}

@@ -1,49 +1,71 @@
 {% extends "base.html" %}
-{% comment %}Authenticated application shell: top bar, sidebar (permission-aware display only), breadcrumbs, messages.{% endcomment %}
-{% block header %}{% endblock %}
+{% comment %}
+Authenticated application shell.
+Blocks for pages: title, heading, subtitle, actions, content.
+Navigation comes from apps.common.navigation (registered per app); visibility is cosmetic -
+every view enforces its own permissions.
+{% endcomment %}
 {% block body %}
-<div class="shell" x-data="navToggle">
-  <aside class="shell-side" id="sidebar" data-open="false" :data-open="open" aria-label="Main navigation">
-    <div class="auth-brand"><img src="{{ theme_logo_url }}" alt=""><span>{{ theme.brand_name }}</span></div>
+<div class="app" x-data="navToggle">
+  <aside class="sidebar" id="sidebar" data-open="false" :data-open="open" aria-label="Main navigation">
+    <a class="brand" href="{% url 'home' %}">
+      <span class="brand-logo"><img src="{{ theme_logo_url }}" alt=""></span>
+      <span class="brand-name">{{ theme.brand_name }}<span class="brand-tagline">{{ theme.tagline }}</span></span>
+    </a>
     <nav>
-      <a class="nav-link" href="{% url 'home' %}" {% if nav_section == 'home' %}aria-current="page"{% endif %}><i data-lucide="home" aria-hidden="true"></i> Home</a>
-      {% if perms.accounts.view_user or perms.accounts.view_role %}<div class="nav-heading">Administration</div>{% endif %}
-      {% if perms.accounts.view_user %}<a class="nav-link" href="{% url 'accounts:user_list' %}" {% if nav_section == 'users' %}aria-current="page"{% endif %}><i data-lucide="users" aria-hidden="true"></i> Users</a>{% endif %}
-      {% if perms.accounts.view_role %}
-      <a class="nav-link" href="{% url 'accounts:role_list' %}" {% if nav_section == 'roles' %}aria-current="page"{% endif %}><i data-lucide="shield-check" aria-hidden="true"></i> Roles</a>
-      <a class="nav-link" href="{% url 'accounts:group_list' %}" {% if nav_section == 'groups' %}aria-current="page"{% endif %}><i data-lucide="users-round" aria-hidden="true"></i> Groups</a>
-      {% endif %}
-      <div class="nav-heading">My account</div>
-      <a class="nav-link" href="{% url 'accounts:profile' %}" {% if nav_section == 'profile' %}aria-current="page"{% endif %}><i data-lucide="user-round" aria-hidden="true"></i> Profile</a>
-      <a class="nav-link" href="{% url 'accounts:sessions' %}" {% if nav_section == 'sessions' %}aria-current="page"{% endif %}><i data-lucide="monitor-smartphone" aria-hidden="true"></i> Sessions</a>
+      {% for section in navigation %}
+      <div class="nav-section">
+        {% if section.label %}<div class="nav-heading">{{ section.label }}</div>{% endif %}
+        {% for item in section.items %}
+        <a class="nav-link" href="{{ item.url }}" {% if nav_section == item.key %}aria-current="page"{% endif %}>
+          <i data-lucide="{{ item.icon }}" aria-hidden="true"></i><span>{{ item.label }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endfor %}
     </nav>
   </aside>
-  <div>
-    <div class="topbar">
-      <button type="button" class="btn btn-sm only-mobile" @click="toggle" aria-controls="sidebar" aria-label="Toggle navigation"><i data-lucide="menu" aria-hidden="true"></i></button>
-      <span class="ems-brand">{{ theme.tagline }}</span>
-      <span class="grow"></span>
+  <div class="backdrop" @click="close"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="btn btn-ghost icon-btn mobile-only" @click="toggle" aria-controls="sidebar" aria-label="Open navigation">
+        <i data-lucide="menu" aria-hidden="true"></i>
+      </button>
+      <span class="spacer"></span>
       {% if user.is_authenticated %}
-      <span class="muted-on-primary">{{ user.display_name }}</span>
-      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
-        <button type="submit" class="btn btn-sm"><i data-lucide="log-out" aria-hidden="true"></i> Sign out</button>
+      <a class="user-chip" href="{% url 'accounts:profile' %}">
+        <span class="avatar" aria-hidden="true">{{ user.first_name|first|default:user.email|first|upper }}</span>
+        <span class="hide-sm">{{ user.display_name }}</span>
+      </a>
+      <form method="post" action="{% url 'accounts:logout' %}" class="inline">{% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm"><i data-lucide="log-out" aria-hidden="true"></i><span class="hide-sm">Sign out</span></button>
       </form>
       {% endif %}
-    </div>
-    <main id="main" class="shell-main">
+    </header>
+
+    <main id="main" class="content">
       {% include "components/breadcrumbs.html" %}
+      <div class="page-header">
+        <div>
+          <h1>{% block heading %}{% endblock %}</h1>
+          {% block subtitle_wrap %}{% endblock %}
+        </div>
+        <div class="cluster">{% block actions %}{% endblock %}</div>
+      </div>
       {% include "components/messages.html" %}
       {% block content %}{% endblock %}
     </main>
   </div>
 </div>
+
 <dialog id="confirm-dialog" class="confirm" aria-labelledby="confirm-title">
-  <form method="dialog">
-    <h2 class="mt-0" id="confirm-title">Please confirm</h2>
-    <p data-confirm-message></p>
-    <div class="actions end">
+  <form method="dialog" class="stack">
+    <h2 id="confirm-title">Please confirm</h2>
+    <p data-confirm-message class="mb-0"></p>
+    <div class="cluster cluster-end">
       <button type="submit" value="cancel" class="btn">Cancel</button>
-      <button type="submit" value="confirm" class="btn btn-danger" autofocus>Confirm</button>
+      <button type="submit" value="confirm" class="btn btn-primary" autofocus>Confirm</button>
     </div>
   </form>
 </dialog>

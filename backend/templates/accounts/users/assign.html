@@ -1,15 +1,18 @@
 {% extends "layouts/app.html" %}
 {% block title %}{{ page_title }} · {{ theme.brand_name }}{% endblock %}
+{% block heading %}{{ page_title }}{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">{{ target.display_name }} &middot; changes are audited. You cannot grant access you do not hold.</p>{% endblock %}
 {% block content %}
-<div class="page-head"><h1>{{ page_title }}: {{ target.display_name }}</h1></div>
-<section class="narrow card">
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {% include "components/form.html" %}
-    <div class="actions mt-4">
-      <button type="submit" class="btn btn-primary" data-loading>Save</button>
-      <a class="btn" href="{{ cancel_url }}">Cancel</a>
-    </div>
-  </form>
+<section class="card w-narrow">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="checkbox-grid">{% include "components/form_fields.html" %}</div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" data-loading>Save</button>
+        <a class="btn" href="{{ cancel_url }}">Cancel</a>
+      </div>
+    </form>
+  </div>
 </section>
 {% endblock %}

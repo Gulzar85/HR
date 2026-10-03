@@ -1,0 +1,9 @@
+{% comment %}
+CSRF-protected POST action rendered as a button.
+Params: url, label, icon (optional), css (e.g. "btn-sm btn-danger"), confirm (optional message),
+        name/value (optional hidden field, e.g. name="action" value="suspend").
+{% endcomment %}
+<form method="post" action="{{ url }}" class="inline"{% if confirm %} data-confirm="{{ confirm }}"{% endif %}>
+  {% csrf_token %}{% if name %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endif %}
+  <button type="submit" class="btn {{ css|default:'btn-sm' }}">{% if icon %}<i data-lucide="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</button>
+</form>

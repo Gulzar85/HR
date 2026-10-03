@@ -1,31 +1,52 @@
 {% extends "layouts/app.html" %}
 {% block title %}{{ profile.group.name }} · {{ theme.brand_name }}{% endblock %}
-{% block content %}
-<div class="page-head">
-  <div><h1>{{ profile.group.name }}</h1><p class="tight muted">{{ profile.description|default:"No description" }}</p></div>
-  <div class="actions">
-    {% if can_manage %}<a class="btn" href="{% url 'accounts:group_edit' profile.pk %}">Rename / edit</a>
-    <form method="post" action="{% url 'accounts:group_toggle' profile.pk %}" {% if profile.is_active %}data-confirm="Deactivate this group? Its permissions stop applying to members."{% endif %}>{% csrf_token %}<button type="submit" class="btn {% if profile.is_active %}btn-danger{% endif %}">{% if profile.is_active %}Deactivate{% else %}Activate{% endif %}</button></form>{% endif %}
-    {% if can_permissions %}<a class="btn btn-primary" href="{% url 'accounts:group_permissions' profile.pk %}">Edit permissions</a>{% endif %}
-  </div>
-</div>
-<section class="card"><h2>Status</h2>{% if profile.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge">Inactive</span>{% endif %}</section>
-<section class="card"><h2>Permissions</h2>
-  {% for pg in permission_groups %}{% for item in pg.items %}{% if item.checked %}<span class="chip-gap badge"><code>{{ item.label }}</code></span>{% endif %}{% endfor %}{% endfor %}
-  {% if not profile.group.permissions.all %}<p class="muted">No permissions assigned.</p>{% endif %}
-</section>
-<section class="card"><h2>Members ({{ member_total }})</h2>
-  {% if can_manage %}
-  <form method="post" action="{% url 'accounts:group_member_add' profile.pk %}" class="actions inline-form ems-form">
-    {% csrf_token %}
-    <div class="grow-wide"><label for="id_email">Add member by email</label><input type="email" name="email" id="id_email" required autocomplete="off"></div>
-    <button type="submit" class="btn btn-primary" data-loading>Add</button>
-  </form>
+{% block heading %}{{ profile.group.name }}{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">{% include "components/active_badge.html" with active=profile.is_active %}{% if profile.description %} &middot; {{ profile.description }}{% endif %}</p>{% endblock %}
+{% block actions %}
+{% if can_manage %}
+  <a class="btn" href="{% url 'accounts:group_edit' profile.pk %}"><i data-lucide="pencil" aria-hidden="true"></i>Rename / edit</a>
+  {% url 'accounts:group_toggle' profile.pk as toggle_url %}
+  {% if profile.is_active %}
+    {% include "components/post_button.html" with url=toggle_url label="Deactivate" icon="circle-off" css="btn-danger" confirm="Deactivate this group? Its permissions stop applying to its members." %}
+  {% else %}
+    {% include "components/post_button.html" with url=toggle_url label="Activate" icon="circle-check" css="" %}
   {% endif %}
-  <div class="table-wrap"><table class="table"><thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody>
-  {% for u in members %}<tr><td><a href="{% url 'accounts:user_detail' u.pk %}">{{ u.display_name }}</a></td><td>{{ u.email }}</td>
-    <td>{% if can_manage %}<form method="post" action="{% url 'accounts:group_member_remove' profile.pk u.pk %}" data-confirm="Remove {{ u.display_name }} from this group?">{% csrf_token %}<button type="submit" class="btn btn-sm btn-danger">Remove</button></form>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="3"><div class="empty-state">No members yet.</div></td></tr>{% endfor %}
-  </tbody></table></div>
-</section>
+{% endif %}
+{% if can_permissions %}<a class="btn btn-primary" href="{% url 'accounts:group_permissions' profile.pk %}"><i data-lucide="key" aria-hidden="true"></i>Edit permissions</a>{% endif %}
+{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <section class="card">
+    <div class="card-header"><h2>Members</h2><span class="badge badge-outline">{{ member_total }}</span></div>
+    {% if can_manage %}
+    <form method="post" action="{% url 'accounts:group_member_add' profile.pk %}" class="filters form" novalidate>
+      {% csrf_token %}
+      <div><label class="field-label" for="id_email">Add member by email</label><input type="email" name="email" id="id_email" required autocomplete="off"></div>
+      <div><button type="submit" class="btn btn-primary" data-loading><i data-lucide="user-plus" aria-hidden="true"></i>Add</button></div>
+    </form>
+    {% endif %}
+    <div class="card-body flush table-wrap">
+      <table class="table">
+        <thead><tr><th scope="col">Member</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+        {% for u in members %}
+          <tr>
+            <td><a class="cell-title" href="{% url 'accounts:user_detail' u.pk %}">{{ u.display_name }}</a><span class="cell-sub">{{ u.email }}</span></td>
+            <td class="actions">{% if can_manage %}{% url 'accounts:group_member_remove' profile.pk u.pk as remove_url %}{% include "components/post_button.html" with url=remove_url label="Remove" css="btn-sm btn-danger" confirm="Remove this member from the group?" %}{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="2">{% include "components/empty.html" with icon="users-round" text="No members yet." %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-header"><h2>Permissions</h2></div>
+    <div class="card-body">
+      <div class="chips">{% for pg in permission_groups %}{% for item in pg.items %}{% if item.checked %}<code title="{{ item.name }}">{{ item.label }}</code>{% endif %}{% endfor %}{% endfor %}</div>
+      {% if not profile.group.permissions.all %}<p class="muted small mb-0">No permissions assigned.</p>{% endif %}
+    </div>
+  </section>
+</div>
 {% endblock %}

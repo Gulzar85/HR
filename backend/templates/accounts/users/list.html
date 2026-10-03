@@ -1,13 +1,12 @@
 {% extends "layouts/app.html" %}
 {% block title %}Users · {{ theme.brand_name }}{% endblock %}
+{% block heading %}Users{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">System accounts. A user is not an employee record.</p>{% endblock %}
+{% block actions %}{% if perms.accounts.add_user %}<a class="btn btn-primary" href="{% url 'accounts:user_create' %}"><i data-lucide="user-plus" aria-hidden="true"></i>Create user</a>{% endif %}{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>Users</h1>
-  {% if perms.accounts.add_user %}<a class="btn btn-primary" href="{% url 'accounts:user_create' %}"><i data-lucide="user-plus" aria-hidden="true"></i> Create user</a>{% endif %}
-</div>
 <section class="card">
-  <form method="get" class="filter-bar" role="search" aria-label="Filter users"
-        hx-get="{% url 'accounts:user_list' %}" hx-target="#user-table" hx-push-url="true"
+  <form method="get" class="filters" role="search" aria-label="Filter users"
+        hx-get="{% url 'accounts:user_list' %}" hx-target="#results" hx-push-url="true"
         hx-trigger="input delay:300ms from:#id_q, change">
     <div><label class="field-label" for="id_q">Search</label>{{ filter.form.q }}</div>
     <div><label class="field-label" for="id_status">Status</label>{{ filter.form.status }}</div>
@@ -15,8 +14,8 @@
     <div><label class="field-label" for="id_group">Group</label>{{ filter.form.group }}</div>
     <div><label class="field-label" for="id_is_active">Can sign in</label>{{ filter.form.is_active }}</div>
     <div><label class="field-label" for="id_ordering">Sort by</label>{{ filter.form.ordering }}</div>
-    <div class="actions"><button type="submit" class="btn"><i data-lucide="search" aria-hidden="true"></i> Filter</button><a class="btn" href="{% url 'accounts:user_list' %}">Reset</a></div>
+    <div class="cluster"><button type="submit" class="btn"><i data-lucide="filter" aria-hidden="true"></i>Apply</button><a class="btn btn-ghost" href="{% url 'accounts:user_list' %}">Reset</a></div>
   </form>
-  <div id="user-table">{% include "accounts/users/_table.html" %}</div>
+  <div id="results">{% include "accounts/users/_table.html" %}</div>
 </section>
 {% endblock %}

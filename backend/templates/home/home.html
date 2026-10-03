@@ -1,0 +1,23 @@
+{% extends request.user.is_authenticated|yesno:"layouts/app.html,layouts/auth.html" %}
+{% block title %}Home · {{ theme.brand_name }}{% endblock %}
+{% block heading %}Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">{{ theme.tagline }}</p>{% endblock %}
+{% block content %}
+<div class="grid grid-3">
+  {% for section in navigation %}{% if section.key != "main" %}
+  <section class="card">
+    <div class="card-header"><h2>{{ section.label }}</h2></div>
+    <div class="card-body stack-sm">
+      {% for item in section.items %}
+      <a class="nav-link" href="{{ item.url }}"><i data-lucide="{{ item.icon }}" aria-hidden="true"></i>{{ item.label }}</a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}{% endfor %}
+</div>
+{% endblock %}
+{% block card %}
+<h1>{{ theme.brand_name }}</h1>
+<p class="muted">{{ theme.tagline }}</p>
+<a class="btn btn-primary btn-block" href="{% url 'accounts:login' %}"><i data-lucide="log-in" aria-hidden="true"></i>Sign in</a>
+{% endblock %}

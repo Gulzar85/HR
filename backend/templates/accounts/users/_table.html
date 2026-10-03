@@ -1,24 +1,23 @@
 <div class="table-wrap">
   <table class="table">
     <caption class="sr-only">Users</caption>
-    <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Username</th><th scope="col">Status</th><th scope="col">Roles</th><th scope="col">Groups</th><th scope="col">Last login</th><th scope="col">Created</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+    <thead><tr><th scope="col">Name</th><th scope="col">Username</th><th scope="col">Status</th><th scope="col">Roles</th><th scope="col" class="hide-sm">Groups</th><th scope="col" class="hide-sm">Last login</th><th scope="col" class="hide-sm">Created</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
     <tbody>
-      {% for u in users %}
+    {% for u in users %}
       <tr>
-        <td><a href="{% url 'accounts:user_detail' u.pk %}">{{ u.display_name }}</a></td>
-        <td>{{ u.email }}</td>
+        <td><a class="cell-title" href="{% url 'accounts:user_detail' u.pk %}">{{ u.display_name }}</a><span class="cell-sub">{{ u.email }}</span></td>
         <td>{{ u.username }}</td>
-        <td>{% include "components/status_badge.html" with status=u.status %}</td>
-        <td>{% for r in u.roles.all %}<span class="badge">{{ r.name }}</span> {% empty %}<span class="muted">&mdash;</span>{% endfor %}</td>
-        <td>{% for g in u.groups.all %}<span class="badge">{{ g.name }}</span> {% empty %}<span class="muted">&mdash;</span>{% endfor %}</td>
-        <td>{% if u.last_login %}{{ u.last_login|date:"d M Y H:i" }}{% else %}<span class="muted">Never</span>{% endif %}</td>
-        <td>{{ u.date_joined|date:"d M Y" }}</td>
-        <td><a class="btn btn-sm" href="{% url 'accounts:user_detail' u.pk %}">View</a></td>
+        <td>{% include "components/user_status.html" with status=u.status %}</td>
+        <td><div class="chips">{% for r in u.roles.all %}<span class="badge badge-outline">{{ r.name }}</span>{% empty %}<span class="muted">&mdash;</span>{% endfor %}</div></td>
+        <td class="hide-sm"><div class="chips">{% for g in u.groups.all %}<span class="badge badge-outline">{{ g.name }}</span>{% empty %}<span class="muted">&mdash;</span>{% endfor %}</div></td>
+        <td class="hide-sm nowrap">{% if u.last_login %}{{ u.last_login|date:"d M Y H:i" }}{% else %}<span class="muted">Never</span>{% endif %}</td>
+        <td class="hide-sm nowrap">{{ u.date_joined|date:"d M Y" }}</td>
+        <td class="actions"><a class="btn btn-sm" href="{% url 'accounts:user_detail' u.pk %}">Open</a></td>
       </tr>
-      {% empty %}
-      <tr><td colspan="9"><div class="empty-state"><i data-lucide="users" aria-hidden="true"></i><p>No users match these filters.</p></div></td></tr>
-      {% endfor %}
+    {% empty %}
+      <tr><td colspan="8">{% include "components/empty.html" with icon="users" text="No users match these filters." %}</td></tr>
+    {% endfor %}
     </tbody>
   </table>
 </div>
-{% include "components/pagination.html" with hx_target="#user-table" %}
+{% include "components/pagination.html" with hx_target="#results" %}

@@ -1,7 +1,10 @@
 {% if messages %}
 <div aria-live="polite">
   {% for message in messages %}
-  <div class="alert alert-{{ message.level_tag|default:'info' }}" role="{% if message.level_tag == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
+  <div class="alert alert-{{ message.level_tag|default:'info' }}" role="{% if message.level_tag == 'error' %}alert{% else %}status{% endif %}">
+    <i data-lucide="{% if message.level_tag == 'success' %}circle-check{% elif message.level_tag == 'error' %}circle-alert{% elif message.level_tag == 'warning' %}triangle-alert{% else %}info{% endif %}" aria-hidden="true"></i>
+    <div>{{ message }}</div>
+  </div>
   {% endfor %}
 </div>
 {% endif %}

@@ -1,15 +1,6 @@
 {% extends "layouts/app.html" %}
 {% block title %}{{ page_title }} · {{ theme.brand_name }}{% endblock %}
+{% block heading %}{{ page_title }}{% endblock %}
 {% block content %}
-<div class="page-head"><h1>{{ page_title }}</h1></div>
-<section class="narrow card">
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {% include "components/form.html" %}
-    <div class="actions mt-4">
-      <button type="submit" class="btn btn-primary" data-loading>{{ submit_label }}</button>
-      {% if cancel_url %}<a class="btn" href="{{ cancel_url }}">Cancel</a>{% endif %}
-    </div>
-  </form>
-</section>
+{% include "components/form_page.html" %}
 {% endblock %}

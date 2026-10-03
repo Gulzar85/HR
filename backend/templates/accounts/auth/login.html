@@ -1,24 +1,26 @@
-{% extends "accounts/auth/_auth_base.html" %}
+{% extends "layouts/auth.html" %}
 {% load crispy_forms_tags %}
 {% block title %}Sign in · {{ theme.brand_name }}{% endblock %}
 {% block card %}
-<h1 class="mb-1">Sign in</h1>
-<p class="mt-0 muted">{{ theme.tagline }}</p>
-<form method="post" novalidate class="ems-form" aria-describedby="{% if form.errors %}login-errors{% endif %}">
+<div>
+  <h1>Sign in</h1>
+  <p class="muted mb-0">Use your work email address.</p>
+</div>
+<form method="post" novalidate class="form"{% if form.errors %} aria-describedby="login-errors"{% endif %}>
   {% csrf_token %}
   {% if form.non_field_errors %}
-  <div class="alert alert-error" role="alert" id="login-errors">
-    {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+  <div class="alert alert-error" role="alert" id="login-errors"><i data-lucide="circle-alert" aria-hidden="true"></i>
+    <div>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
   </div>
   {% endif %}
   {{ form.username|as_crispy_field }}
-  <div class="pw-field">
+  <div class="input-icon">
     {{ form.password|as_crispy_field }}
     <button type="button" data-toggle-password="#id_password" aria-label="Show password" aria-pressed="false"><i data-lucide="eye" aria-hidden="true"></i></button>
   </div>
   {{ form.remember_me|as_crispy_field }}
   <input type="hidden" name="next" value="{{ next }}">
-  <button type="submit" class="btn btn-primary btn-block" data-loading><i data-lucide="log-in" aria-hidden="true"></i> Sign in</button>
+  <button type="submit" class="btn btn-primary btn-block" data-loading><i data-lucide="log-in" aria-hidden="true"></i>Sign in</button>
 </form>
-<p class="mt-4 center"><a href="{% url 'accounts:password_reset' %}">Forgot your password?</a></p>
+<p class="small"><a href="{% url 'accounts:password_reset' %}">Forgot your password?</a></p>
 {% endblock %}
