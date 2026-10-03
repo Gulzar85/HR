@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ status }}{% endblock %}
+{% block content %}
+<section class="ems-card">
+  <h1>{{ status }}</h1>
+  <p>{{ error.message }}</p>
+  <a href="/">Back to home</a>
+</section>
+{% endblock %}

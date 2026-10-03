@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@source "../../templates";
+@source "../../apps";
+/* Use semantic tokens only: bg-(--color-surface), text-(--color-text), border-(--color-border). */

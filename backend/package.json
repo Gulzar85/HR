@@ -1,0 +1,17 @@
+{
+  "name": "mcd-ems-frontend-assets",
+  "private": true,
+  "description": "Build-time only: vendors front-end libraries into static/. Not a runtime dependency.",
+  "scripts": {
+    "vendor": "node scripts/vendor-assets.mjs",
+    "build:css": "tailwindcss -i static/css/tailwind.input.css -o static/css/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "@alpinejs/csp": "^3.14.9",
+    "@tailwindcss/cli": "^4.1.0",
+    "apexcharts": "^4.7.0",
+    "htmx.org": "^2.0.4",
+    "lucide": "^0.540.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

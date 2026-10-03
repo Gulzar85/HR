@@ -1,0 +1,11 @@
+[Unit]
+Description=EMS gunicorn
+After=network.target
+[Service]
+WorkingDirectory=/srv/ems/backend
+EnvironmentFile=/srv/ems/backend/.env
+Environment=DJANGO_SETTINGS_MODULE=config.settings.production
+ExecStart=/srv/ems/venv/bin/gunicorn config.wsgi -c /srv/ems/deployment/gunicorn/gunicorn.conf.py
+Restart=always
+[Install]
+WantedBy=multi-user.target

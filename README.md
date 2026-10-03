@@ -1,0 +1,44 @@
+# McDonald's Pakistan — Employee Management System (EMS)
+
+Enterprise EMS built as a Django **modular monolith** with a REST API for future Electron/mobile clients.
+
+## Scope
+In scope: employee lifecycle, recruitment/ATS, onboarding/offboarding, transfers/promotions, assignments, documents, workflows/approvals, HR cases, headcount, reports/dashboards, notifications, audit, data quality, imports, dynamic theme engine.
+**Out of scope:** AI, payroll, attendance, leave, D365 (and sync), accounting, benefits, performance, learning.
+
+## Stack
+Python 3.12+ / Django 6.1 / DRF / PostgreSQL / Redis / Celery · Django templates + Tailwind v4 + Alpine.js (CSP build) + HTMX + Lucide + ApexCharts. See `../docs/architecture/dependencies.md`.
+
+## Setup (Windows PowerShell; run from `backend/`)
+```powershell
+python -m venv ..\venv
+..\venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+copy .env.example .env          # then edit SECRET_KEY, DATABASE_URL, REDIS_URL
+npm install; npm run vendor; npm run build:css   # front-end assets
+```
+PostgreSQL: `createdb mcd_ems` and set `DATABASE_URL=postgres://user:pass@localhost:5432/mcd_ems`. (`sqlite:///db.sqlite3` works for quick local runs.)
+
+## Run
+```powershell
+python manage.py migrate
+python manage.py runserver                     # http://localhost:8000/  health: /health/live/ /health/ready/  api: /api/v1/
+celery -A config worker -l info --pool=solo    # --pool=solo on Windows
+celery -A config beat -l info                  # schedules outbox dispatch
+```
+
+## Quality
+```powershell
+.\scripts\format.ps1   # ruff format + import sort
+.\scripts\lint.ps1     # ruff + mypy
+.\scripts\test.ps1     # pytest
+.\scripts\check.ps1    # django check + migration check
+```
+
+## Layout
+`config/` settings (base/development/testing/production), urls, celery · `apps/` domain apps · `templates/ static/ tests/` · `../docs` architecture, ADRs · `../desktop/electron-ems` · `../deployment` drafts.
+
+## Architectural rules
+1. CBVs only for web views. 2. Writes in services (`transaction.atomic`), reads in selectors. 3. UUID PKs + immutable business codes. 4. User ≠ Employee; Candidate ≠ Employee. 5. Electron uses only the REST API. 6. No hard-coded brand colors; use theme tokens. 7. Dependencies flow common → platform → domain → services → web/api. 8. Schema changes only via migrations. 9. Logging via `ems.*` loggers, never `print`.
+
+Roadmap: `../docs/architecture/phase-roadmap.md`. Each phase is committed and pushed on completion.

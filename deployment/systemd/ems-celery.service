@@ -1,0 +1,10 @@
+[Unit]
+Description=EMS celery worker
+After=network.target
+[Service]
+WorkingDirectory=/srv/ems/backend
+EnvironmentFile=/srv/ems/backend/.env
+ExecStart=/srv/ems/venv/bin/celery -A config worker -l info -Q default,outbox,notifications,imports,reports,documents,data_quality,workflow
+Restart=always
+[Install]
+WantedBy=multi-user.target

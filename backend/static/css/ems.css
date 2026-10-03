@@ -1,0 +1,10 @@
+/* Component styles use semantic theme tokens only (see docs/architecture/theme-engine.md).
+   Tailwind utilities, when built, reference the same tokens e.g. bg-(--color-surface). */
+.ems-body { margin: 0; background: var(--color-background); color: var(--color-text); font-family: var(--font-sans); }
+.ems-header { display: flex; align-items: center; gap: .75rem; padding: .75rem 1.5rem; background: var(--color-primary); color: var(--color-surface); }
+.ems-logo { height: 2rem; width: 2rem; }
+.ems-brand { font-weight: 700; }
+.ems-main { max-width: 64rem; margin: 1.5rem auto; padding: 0 1rem; }
+.ems-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.5rem; }
+.ems-muted { color: var(--color-muted); }
+a { color: var(--color-info); }
