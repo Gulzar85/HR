@@ -1,0 +1,18 @@
+<section class="card" id="sec-addresses" aria-label="Addresses">
+  {% url 'employees:address_add' employee.pk as add_url %}
+  {% include "employees/sections/_section_head.html" with title="Addresses" section="addresses" add_url=add_url can_add=caps.manage_addresses add_label="Record address" %}
+  <div class="card-body flush table-wrap">
+    <table class="table"><tbody>
+    {% for a in addresses %}
+      <tr{% if a.effective_to %} class="muted"{% endif %}>
+        <td><span class="cell-title">{{ a.one_line }}</span><span class="cell-sub">{{ a.get_address_type_display }}{% if a.country %} &middot; {{ a.country }}{% endif %}</span></td>
+        <td class="nowrap small">{% if a.effective_from %}{{ a.effective_from|date:"d M Y" }}{% else %}&hellip;{% endif %} &ndash; {% if a.effective_to %}{{ a.effective_to|date:"d M Y" }}{% else %}current{% endif %}</td>
+        <td>{% if a.is_primary %}<span class="badge badge-success">Current</span>{% elif a.effective_to %}<span class="badge badge-outline">History</span>{% endif %}</td>
+        <td class="actions">{% if caps.manage_addresses and not a.effective_to %}{% url 'employees:address_close' employee.pk a.pk as u %}{% include "components/post_button.html" with url=u label="Close" css="btn-sm btn-danger" confirm="End this address today? It stays in the history." %}{% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td>{% include "components/empty.html" with icon="map-pin-off" text="No addresses recorded." %}</td></tr>
+    {% endfor %}
+    </tbody></table>
+  </div>
+</section>

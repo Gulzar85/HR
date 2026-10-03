@@ -1,0 +1,21 @@
+{% extends "layouts/app.html" %}
+{% block title %}Edit {{ employee.code }} · {{ theme.brand_name }}{% endblock %}
+{% block heading %}Edit personal details{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle"><code>{{ employee.code }}</code> &middot; {{ employee.person.display_name }}{% if not photo_form %} &middot; sensitive identity fields are not editable with your permissions{% endif %}</p>{% endblock %}
+{% block content %}
+<section class="card w-narrow"><div class="card-body">
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% include "components/form_fields.html" %}
+    {% if photo_form %}
+      <h3 class="mt-4">Profile photo</h3>
+      {% if employee.person.profile_photo %}<img class="avatar-lg" src="{% url 'employees:photo' employee.pk %}" alt="Current photo">{% endif %}
+      {% include "components/form_fields.html" with form=photo_form %}
+    {% endif %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" data-loading>Save</button>
+      <a class="btn" href="{{ cancel_url }}">Cancel</a>
+    </div>
+  </form>
+</div></section>
+{% endblock %}

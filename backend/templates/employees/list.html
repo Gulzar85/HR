@@ -1,0 +1,22 @@
+{% extends "layouts/app.html" %}
+{% block title %}Employees · {{ theme.brand_name }}{% endblock %}
+{% block heading %}Employees{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">Employee master records within your access scope.</p>{% endblock %}
+{% block actions %}
+{% if caps.export %}<a class="btn" href="{% url 'employees:export' %}?{{ querystring }}"><i data-lucide="download" aria-hidden="true"></i>Export CSV</a>{% endif %}
+{% if can_add %}<a class="btn btn-primary" href="{% url 'employees:create' %}"><i data-lucide="user-plus" aria-hidden="true"></i>New employee</a>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="card">
+  <form method="get" class="filters" role="search" aria-label="Filter employees"
+        hx-get="{% url 'employees:list' %}" hx-target="#results" hx-push-url="true"
+        hx-trigger="input delay:350ms from:#id_q, change">
+    <div><label class="field-label" for="id_q">Search</label><input type="search" name="q" id="id_q" value="{{ request.GET.q }}" placeholder="Code, name, email or phone" autocomplete="off"></div>
+    {% for field in filter.form %}{% if field.name != "q" %}
+    <div><label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>
+    {% endif %}{% endfor %}
+    <div class="cluster"><button type="submit" class="btn"><i data-lucide="filter" aria-hidden="true"></i>Apply</button><a class="btn btn-ghost" href="{% url 'employees:list' %}">Reset</a></div>
+  </form>
+  <div id="results">{% include "employees/_table.html" %}</div>
+</section>
+{% endblock %}

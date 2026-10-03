@@ -1,0 +1,13 @@
+<section class="card" id="sec-audit" aria-labelledby="h-audit">
+  <div class="card-header"><h2 id="h-audit">Audit trail</h2><span class="muted small">Latest 20 entries &middot; values of sensitive fields are never stored</span></div>
+  <div class="card-body flush table-wrap">
+    <table class="table">
+      <thead><tr><th scope="col">When</th><th scope="col">Action</th><th scope="col">By</th><th scope="col">Reason</th></tr></thead>
+      <tbody>
+      {% for a in audit %}
+        <tr><td class="nowrap">{{ a.occurred_at|date:"d M Y H:i" }}</td><td><code>{{ a.action }}</code></td><td>{% if a.actor %}{{ a.actor.display_name }}{% else %}system{% endif %}</td><td>{{ a.reason|default:"—" }}</td></tr>
+      {% empty %}<tr><td colspan="4">{% include "components/empty.html" with icon="scroll-text" text="No audit entries." %}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>

@@ -33,7 +33,7 @@ def test_create_user_normalizes_email_hashes_password(admin_user, password):
 
 
 def test_user_has_no_employee_or_org_fields():
-    names = {f.name for f in User._meta.get_fields()}
+    names = {f.name for f in User._meta.concrete_fields}  # reverse accessors are not columns
     assert not names & {
         "employee",
         "employee_id",

@@ -1,6 +1,7 @@
 from django.urls import include, path
 
 from apps.accounts.api import urls as accounts_api
+from apps.employees.api import urls as employees_api
 from apps.organizations.api import urls as org_api
 
 from .views import ApiRootView
@@ -19,5 +20,5 @@ urlpatterns = [
     path("regions/", include((org_api.alias_urlpatterns["region"], "regions"))),
     path("areas/", include((org_api.alias_urlpatterns["area"], "areas"))),
     path("restaurants/", include((org_api.alias_urlpatterns["restaurant"], "restaurants"))),
-    # Phase N: path("employees/", include("apps.employees.api.urls")), ...
+    path("employees/", include(employees_api.employee_urlpatterns)),
 ]

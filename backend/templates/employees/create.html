@@ -1,0 +1,37 @@
+{% extends "layouts/app.html" %}
+{% block title %}New employee · {{ theme.brand_name }}{% endblock %}
+{% block heading %}New employee{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle">Fields marked <span class="asteriskField">*</span> are required. Other sections are optional, but if you start one, complete its required fields. The employee code is generated automatically.</p>{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" novalidate class="stack">
+  {% csrf_token %}
+  {% if duplicates %}
+  <div class="alert alert-warning" role="alert">
+    <i data-lucide="triangle-alert" aria-hidden="true"></i>
+    <div class="stack-sm">
+      <strong>Possible duplicate{{ duplicates|length|pluralize }} found</strong>
+      <ul class="plain">{% for m in duplicates %}<li><a href="{% url 'employees:detail' m.employee.pk %}" target="_blank" rel="noopener">{{ m.code }} &middot; {{ m.name }}</a> <span class="muted small">({{ m.signal|cut:"_" }})</span></li>{% endfor %}</ul>
+      <div class="form">{{ forms.confirm.confirm_duplicates.as_field_group }}</div>
+    </div>
+  </div>
+  {% endif %}
+  <div class="grid grid-2">
+    <section class="card"><div class="card-header"><h2>Personal information <span class="badge badge-outline">Required</span></h2></div>
+      <div class="card-body">{% include "components/form_fields.html" with form=forms.person %}{% include "components/form_fields.html" with form=forms.photo %}</div></section>
+    <section class="card"><div class="card-header"><h2>Contact information <span class="badge badge-outline">Optional</span></h2></div>
+      <div class="card-body">{% include "components/form_fields.html" with form=forms.contacts %}</div></section>
+    <section class="card"><div class="card-header"><h2>Address <span class="badge badge-outline">Optional</span></h2></div>
+      <div class="card-body">{% include "components/form_fields.html" with form=forms.address %}</div></section>
+    <section class="card"><div class="card-header"><h2>Emergency contact <span class="badge badge-outline">Optional</span></h2></div>
+      <div class="card-body">{% include "components/form_fields.html" with form=forms.emergency %}</div></section>
+    {% if forms.identifier %}
+    <section class="card"><div class="card-header"><h2>Identifier <span class="badge badge-outline">Optional</span></h2></div>
+      <div class="card-body"><p class="muted small">Stored securely and shown masked. Duplicates across employees are rejected.</p>{% include "components/form_fields.html" with form=forms.identifier %}</div></section>
+    {% endif %}
+  </div>
+  <div class="form-actions sticky">
+    <button type="submit" class="btn btn-primary" data-loading>{% if duplicates %}Create anyway{% else %}Create employee{% endif %}</button>
+    <a class="btn" href="{% url 'employees:list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

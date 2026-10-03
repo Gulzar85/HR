@@ -1,0 +1,21 @@
+<section class="card" id="sec-emergency" aria-label="Emergency contacts">
+  {% url 'employees:emergency_add' employee.pk as add_url %}
+  {% include "employees/sections/_section_head.html" with title="Emergency contacts" section="emergency" add_url=add_url can_add=caps.manage_emergency add_label="Add emergency contact" %}
+  <div class="card-body flush table-wrap">
+    <table class="table"><tbody>
+    {% for c in emergency_contacts %}
+      <tr>
+        <td><span class="cell-title">{{ c.name }}</span><span class="cell-sub">{{ c.get_relationship_display }}</span></td>
+        <td class="small">{{ c.phone }}{% if c.alternative_phone %}<br>{{ c.alternative_phone }}{% endif %}{% if c.email %}<br>{{ c.email }}{% endif %}</td>
+        <td>{% if c.is_primary %}<span class="badge badge-success">Primary</span>{% endif %}</td>
+        <td class="actions">{% if caps.manage_emergency %}
+          {% if not c.is_primary %}{% url 'employees:emergency_primary' employee.pk c.pk as u %}{% include "components/post_button.html" with url=u label="Make primary" %}{% endif %}
+          {% url 'employees:emergency_remove' employee.pk c.pk as u2 %}{% include "components/post_button.html" with url=u2 label="Remove" css="btn-sm btn-danger" confirm="Remove this emergency contact?" %}
+        {% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td>{% include "components/empty.html" with icon="siren" text="No emergency contacts yet." %}</td></tr>
+    {% endfor %}
+    </tbody></table>
+  </div>
+</section>

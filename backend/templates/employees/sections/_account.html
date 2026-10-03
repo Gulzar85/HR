@@ -1,0 +1,19 @@
+<section class="card" id="sec-account" aria-labelledby="h-account">
+  <div class="card-header"><h2 id="h-account">Account &amp; status</h2></div>
+  <div class="card-body stack">
+    <dl class="details">
+      <dt>Status</dt><dd>{% include "components/employee_status.html" with status=employee.employee_status %}{% if employee.archived_at %} <span class="muted small">since {{ employee.archived_at|date:"d M Y" }}</span>{% endif %}</dd>
+      <dt>User account</dt><dd>{% if employee.user %}{{ employee.user.email }}{% else %}<span class="muted">None &mdash; this employee cannot sign in.</span>{% endif %}</dd>
+      <dt>Created</dt><dd>{{ employee.created_at|date:"d M Y H:i" }}{% if employee.created_by %} <span class="muted small">by {{ employee.created_by.display_name }}</span>{% endif %}</dd>
+    </dl>
+    {% if caps.link_user %}
+    <div class="cluster">
+      {% if employee.user %}
+        {% url 'employees:unlink_user' employee.pk as u %}{% include "components/post_button.html" with url=u label="Unlink account" icon="unlink" css="btn-sm btn-danger" confirm="Unlink the user account? The account itself is not changed." %}
+      {% else %}
+        <a class="btn btn-sm" href="{% url 'employees:link_user' employee.pk %}"><i data-lucide="link" aria-hidden="true"></i>Link user account</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>

@@ -1,0 +1,22 @@
+<section class="card" id="sec-identity" aria-labelledby="h-identity">
+  <div class="card-header"><h2 id="h-identity">Identity</h2></div>
+  <div class="card-body cluster">
+    {% if caps.view_sensitive and person.profile_photo %}
+      <img class="avatar-lg" src="{% url 'employees:photo' employee.pk %}" alt="Photo of {{ person.display_name }}">
+    {% else %}
+      <span class="avatar avatar-lg" aria-hidden="true">{{ person.initials }}</span>
+    {% endif %}
+    <dl class="details grow">
+      <dt>Full name</dt><dd>{{ person.full_name }}</dd>
+      {% if person.preferred_name %}<dt>Preferred name</dt><dd>{{ person.preferred_name }}</dd>{% endif %}
+      <dt>Employee code</dt><dd><code>{{ employee.code }}</code></dd>
+      {% if caps.view_sensitive %}
+        <dt>Date of birth</dt><dd>{% if person.date_of_birth %}{{ person.date_of_birth|date:"d M Y" }} <span class="muted small">({{ person.age }} years)</span>{% else %}<span class="muted">Not recorded</span>{% endif %}</dd>
+        <dt>Gender</dt><dd>{{ person.get_gender_display|default:"Not declared" }}</dd>
+        <dt>Nationality</dt><dd>{% if person.nationality %}{{ nationality_label|default:person.nationality }}{% else %}<span class="muted">Not declared</span>{% endif %}</dd>
+      {% else %}
+        <dt>Personal details</dt><dd><span class="badge badge-outline"><i data-lucide="lock" aria-hidden="true"></i>Restricted</span></dd>
+      {% endif %}
+    </dl>
+  </div>
+</section>

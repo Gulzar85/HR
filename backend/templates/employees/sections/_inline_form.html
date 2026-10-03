@@ -1,0 +1,11 @@
+<div class="card-body">
+  <form method="post" action="{{ action_url }}" hx-post="{{ action_url }}" hx-target="#sec-{{ section }}" hx-swap="outerHTML" hx-encoding="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% if title %}<h3>{{ title }}</h3>{% endif %}
+    {% include "components/form_fields.html" %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary btn-sm" data-loading>Save</button>
+      <a class="btn btn-sm btn-ghost" href="{% url 'employees:detail' employee.pk %}#sec-{{ section }}">Cancel</a>
+    </div>
+  </form>
+</div>

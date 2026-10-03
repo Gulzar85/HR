@@ -167,6 +167,56 @@ EMS_ADMIN_PAGE_SIZE = env.int("EMS_ADMIN_PAGE_SIZE", default=25)
 EMS_TRUSTED_PROXY_COUNT = env.int("EMS_TRUSTED_PROXY_COUNT", default=0)
 EMS_SITE_URL = env("EMS_SITE_URL", default="")  # used in e-mails when no request is available
 
+# --- Employee domain (Phase 3) ------------------------------------------------
+# Age boundaries are *policy*, so they live in settings and are read by
+# apps.employees.validators - never duplicated per form.
+# MIN is the minimum *employment* age, used by the Phase 4 Employment module
+# (validators.assert_old_enough_to_employ). It is deliberately NOT applied to Person records:
+# personhood has no age floor. MAX is the oldest age a date of birth may represent before it is
+# treated as a data-entry error.
+EMS_MIN_EMPLOYEE_AGE = env.int("EMS_MIN_EMPLOYEE_AGE", default=14)
+EMS_MAX_EMPLOYEE_AGE = env.int("EMS_MAX_EMPLOYEE_AGE", default=120)
+# Profile photos: extension allow-list + size. Content is verified on upload regardless
+# (apps.employees.validators.validate_profile_photo decodes the image); SVG is never allowed.
+EMS_PROFILE_PHOTO_EXTENSIONS = (".jpg", ".jpeg", ".png", ".gif", ".webp")
+EMS_PROFILE_PHOTO_MAX_BYTES = env.int("EMS_PROFILE_PHOTO_MAX_BYTES", default=2 * 1024 * 1024)
+# Controlled nationality / issuing-country list, as ISO 3166-1 alpha-2 pairs. Override with
+# EMS_COUNTRIES="PK:Pakistan,IN:India,..." to add or restrict countries without a migration.
+EMS_COUNTRIES = [
+    pair.split(":", 1)
+    for pair in env.list(
+        "EMS_COUNTRIES",
+        default=[
+            "PK:Pakistan",
+            "AF:Afghanistan",
+            "AE:United Arab Emirates",
+            "AU:Australia",
+            "BD:Bangladesh",
+            "BH:Bahrain",
+            "CA:Canada",
+            "CN:China",
+            "EG:Egypt",
+            "GB:United Kingdom",
+            "IN:India",
+            "IQ:Iraq",
+            "IR:Iran",
+            "KW:Kuwait",
+            "MY:Malaysia",
+            "NG:Nigeria",
+            "NP:Nepal",
+            "OM:Oman",
+            "PH:Philippines",
+            "QA:Qatar",
+            "SA:Saudi Arabia",
+            "SG:Singapore",
+            "US:United States",
+            "ZA:South Africa",
+        ],
+    )
+]
+# Export rows are written in batches; a very large export belongs to Phase 16 (Reports).
+EMS_EMPLOYEE_EXPORT_MAX_ROWS = env.int("EMS_EMPLOYEE_EXPORT_MAX_ROWS", default=10000)
+
 # --- I18N -------------------------------------------------------------------
 LANGUAGE_CODE = "en"
 TIME_ZONE = "Asia/Karachi"

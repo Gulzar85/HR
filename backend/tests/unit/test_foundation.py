@@ -79,7 +79,8 @@ def test_custom_user_model():
     assert u.pk.version == 4
     assert u.email == "alice@example.com"  # stored lower-case: email is the login identifier
     assert u.check_password("s3cret-pass-123")
-    assert not any(f.name in ("employee", "person") for f in User._meta.get_fields())
+    # User owns no employee/person column (Employee.user is an optional link *from* Employee).
+    assert not any(f.name in ("employee", "person") for f in User._meta.concrete_fields)
     with pytest.raises(IntegrityError), transaction.atomic():
         User.objects.create_user("alice2", "alice@example.com", "s3cret-pass-123")
     assert User.objects.get_by_email("ALICE@example.com") == u

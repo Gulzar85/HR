@@ -1,0 +1,7 @@
+{% comment %}Params: title, section, add_url + can_add (show the add button), add_label.{% endcomment %}
+<div class="card-header">
+  <h2>{{ title }}</h2>
+  {% if add_url and can_add %}<button type="button" class="btn btn-sm" hx-get="{{ add_url }}" hx-target="#sec-{{ section }}-form" hx-swap="innerHTML"><i data-lucide="plus" aria-hidden="true"></i>{{ add_label|default:"Add" }}</button>{% endif %}
+</div>
+{% if flash %}<div class="card-body mb-0"><div class="alert alert-success mb-0" role="status"><i data-lucide="circle-check" aria-hidden="true"></i><div>{{ flash }}</div></div></div>{% endif %}
+<div id="sec-{{ section }}-form"></div>

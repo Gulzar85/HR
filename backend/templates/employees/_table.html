@@ -1,0 +1,28 @@
+{% comment %}Minimum data only: no identifiers, no DOB, no addresses.{% endcomment %}
+<div class="table-wrap">
+  <table class="table">
+    <caption class="sr-only">Employees</caption>
+    <thead><tr>
+      <th scope="col">Employee</th><th scope="col">Status</th>
+      <th scope="col" class="hide-sm">Email</th><th scope="col" class="hide-sm">Phone</th>
+      <th scope="col" class="hide-sm">User account</th><th scope="col" class="hide-sm">Created</th>
+      <th scope="col"><span class="sr-only">Actions</span></th>
+    </tr></thead>
+    <tbody>
+    {% for e in employees %}
+      <tr>
+        <td><a class="cell-title" href="{% url 'employees:detail' e.pk %}">{{ e.person.display_name }}</a><span class="cell-sub">{{ e.code }}</span></td>
+        <td>{% include "components/employee_status.html" with status=e.employee_status %}</td>
+        <td class="hide-sm">{% for c in e.primary_contacts %}{% if c.contact_type == "email" %}{{ c.value }}{% endif %}{% empty %}<span class="muted">&mdash;</span>{% endfor %}</td>
+        <td class="hide-sm nowrap">{% for c in e.primary_contacts %}{% if c.contact_type == "mobile" %}{{ c.value }}{% endif %}{% empty %}<span class="muted">&mdash;</span>{% endfor %}</td>
+        <td class="hide-sm">{% if e.user_id %}<span class="badge badge-info">Linked</span>{% else %}<span class="muted">&mdash;</span>{% endif %}</td>
+        <td class="hide-sm nowrap">{{ e.created_at|date:"d M Y" }}</td>
+        <td class="actions"><a class="btn btn-sm" href="{% url 'employees:detail' e.pk %}">Open</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">{% include "components/empty.html" with icon="contact-round" text="No employees match, or none are within your access scope." %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" with hx_target="#results" %}

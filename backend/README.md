@@ -35,6 +35,10 @@ python manage.py organization_tree                       # print the hierarchy
 ```
 UI at `/organizations/` (overview, structure tree, per-type screens). API at `/api/v1/organizations/`. Grant users an organization scope (Users → Access scopes) so they can see data. See `../docs/architecture/organization-management.md` and `../docs/security/organization-scopes.md`.
 
+
+## Employees (Phase 3)
+
+UI at `/employees/`: list and search, create with duplicate warnings, a detail page with inline HTMX editors, timeline and export. API at `/api/v1/employees/`. Employees are visible only to users with a global scope until Phase 4 adds assignments. Identifiers are masked unless explicitly revealed, and each reveal is audited. See `../docs/architecture/employee-domain.md` and `../docs/security/employee-data.md`.
 ## Run
 ```powershell
 python manage.py migrate
@@ -57,6 +61,6 @@ celery -A config beat -l info                  # schedules outbox dispatch
 ## Architectural rules
 1. CBVs only for web views. 2. Writes in services (`transaction.atomic`), reads in selectors. 3. UUID PKs + immutable business codes. 4. User ≠ Employee; Candidate ≠ Employee. 5. Electron uses only the REST API. 6. No hard-coded brand colors; use theme tokens. 7. Dependencies flow common → platform → domain → services → web/api. 8. Schema changes only via migrations. 9. Logging via `ems.*` loggers, never `print`.
 
-Status: Phase 0 (foundation), Phase 1 (identity, RBAC, user administration) and Phase 2 (organization management) complete.
+Status: Phase 0 (foundation), Phase 1 (identity, RBAC, user administration), Phase 2 (organization management) and Phase 3 (person and employee core) complete.
 
 Roadmap: `../docs/architecture/phase-roadmap.md`. Each phase is committed and pushed on completion.

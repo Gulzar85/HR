@@ -19,4 +19,6 @@
 | Dev: pytest, pytest-django, ruff, mypy, django-stubs, djangorestframework-stubs | Tests, lint+format+import sort, typing |
 | npm (build only): tailwindcss, @tailwindcss/cli, htmx.org, @alpinejs/csp, lucide, apexcharts | Vendored into `static/` by `npm run vendor` / `build:css` |
 
-Deliberately not added: drf-spectacular, Elasticsearch/OpenSearch, an MFA library (deferred), Pillow (profile images deferred).
+- **Pillow**: verifies employee profile photo uploads (format, size and pixel limits). Added in Phase 3.
+
+Deliberately not added: drf-spectacular, Elasticsearch/OpenSearch, an MFA library (deferred).

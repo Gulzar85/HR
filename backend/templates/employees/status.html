@@ -1,0 +1,11 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ page_title }} · {{ theme.brand_name }}{% endblock %}
+{% block heading %}{{ page_title }}{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle"><code>{{ employee.code }}</code> &middot; {{ employee.person.display_name }} &middot; {% include "components/employee_status.html" with status=employee.employee_status %}</p>{% endblock %}
+{% block content %}
+{% if form.fields.employee_status and not form.fields.employee_status.choices %}
+<section class="card w-narrow"><div class="card-body"><p>You have no status changes available for this employee.</p><a class="btn" href="{{ cancel_url }}">Back</a></div></section>
+{% else %}
+{% include "components/form_page.html" %}
+{% endif %}
+{% endblock %}

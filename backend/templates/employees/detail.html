@@ -1,0 +1,32 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ employee.code }} · {{ theme.brand_name }}{% endblock %}
+{% block heading %}{{ person.display_name }}{% endblock %}
+{% block subtitle_wrap %}<p class="page-subtitle"><code>{{ employee.code }}</code> &middot; {% include "components/employee_status.html" with status=employee.employee_status %}{% if person.preferred_name %} &middot; {{ person.full_name }}{% endif %}</p>{% endblock %}
+{% block actions %}
+{% if caps.change_person %}<a class="btn" href="{% url 'employees:edit' employee.pk %}"><i data-lucide="pencil" aria-hidden="true"></i>Edit details</a>{% endif %}
+{% if status_choices %}<a class="btn" href="{% url 'employees:status' employee.pk %}"><i data-lucide="toggle-right" aria-hidden="true"></i>Change status</a>{% endif %}
+{% endblock %}
+{% block content %}
+<nav class="card" aria-label="Employee sections">
+  <div class="card-body cluster small">
+    <a href="#sec-identity">Identity</a><a href="#sec-contacts">Contacts</a>
+    {% if caps.view_addresses %}<a href="#sec-addresses">Addresses</a>{% endif %}
+    {% if caps.view_emergency %}<a href="#sec-emergency">Emergency contacts</a>{% endif %}
+    {% if caps.view_identifiers %}<a href="#sec-identifiers">Identifiers</a>{% endif %}
+    <a href="#sec-account">Account</a><a href="#sec-notes">Notes</a>
+    {% if caps.view_timeline %}<a href="#sec-timeline">Timeline</a>{% endif %}
+    {% if caps.view_audit %}<a href="#sec-audit">Audit</a>{% endif %}
+  </div>
+</nav>
+<div class="grid grid-2">
+  {% include "employees/sections/_identity.html" %}
+  {% include "employees/sections/_contacts.html" %}
+  {% if caps.view_addresses %}{% include "employees/sections/_addresses.html" %}{% endif %}
+  {% if caps.view_emergency %}{% include "employees/sections/_emergency.html" %}{% endif %}
+  {% if caps.view_identifiers %}{% include "employees/sections/_identifiers.html" %}{% endif %}
+  {% include "employees/sections/_account.html" %}
+  {% include "employees/sections/_notes.html" %}
+  {% if caps.view_timeline %}{% include "employees/sections/_timeline.html" %}{% endif %}
+</div>
+{% if caps.view_audit %}{% include "employees/sections/_audit.html" %}{% endif %}
+{% endblock %}

@@ -1,0 +1,16 @@
+<section class="card" id="sec-timeline" aria-labelledby="h-timeline">
+  <div class="card-header">
+    <h2 id="h-timeline">Timeline</h2>
+    <button type="button" class="btn btn-sm btn-ghost" hx-get="{% url 'employees:timeline' employee.pk %}" hx-target="#sec-timeline" hx-swap="outerHTML"><i data-lucide="refresh-cw" aria-hidden="true"></i>Refresh</button>
+  </div>
+  <div class="card-body">
+    <ul class="timeline">
+    {% for t in timeline %}
+      <li>
+        <div><strong>{{ t.summary }}</strong>{% if t.description %} <span class="muted small">&middot; {{ t.description }}</span>{% endif %}</div>
+        <div class="when">{{ t.occurred_at|date:"d M Y H:i" }} &middot; {% if t.actor %}{{ t.actor.display_name }}{% else %}system{% endif %}{% if t.source_app != "employees" %} &middot; {{ t.source_app }}{% endif %}</div>
+      </li>
+    {% empty %}<li class="muted">No events yet.</li>{% endfor %}
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,32 @@
+{% comment %}Values are masked unless the user explicitly reveals them (POST, audited) and holds
+view_sensitive_identity + view_identifiers. The unmasked value never appears otherwise.{% endcomment %}
+<section class="card" id="sec-identifiers" aria-label="Identifiers">
+  {% url 'employees:identifier_add' employee.pk as add_url %}
+  {% include "employees/sections/_section_head.html" with title="Identifiers" section="identifiers" add_url=add_url can_add=caps.manage_identifiers add_label="Add identifier" %}
+  {% if caps.reveal_identifiers and identifiers and not revealed %}
+  <div class="card-body mb-0">
+    <form method="post" action="{% url 'employees:identifiers_reveal' employee.pk %}" hx-post="{% url 'employees:identifiers_reveal' employee.pk %}" hx-target="#sec-identifiers" hx-swap="outerHTML" class="inline">
+      {% csrf_token %}<button type="submit" class="btn btn-sm"><i data-lucide="eye" aria-hidden="true"></i>Show full numbers (audited)</button>
+    </form>
+  </div>
+  {% endif %}
+  <div class="card-body flush table-wrap">
+    <table class="table"><tbody>
+    {% for i in identifiers %}
+      <tr>
+        <td><span class="cell-title"><code>{% if revealed and caps.reveal_identifiers %}{{ i.value }}{% else %}{{ i.masked_value }}{% endif %}</code></span><span class="cell-sub">{{ i.get_identifier_type_display }}{% if i.issuing_country %} &middot; {{ i.issuing_country }}{% endif %}{% if i.expiry_date %} &middot; expires {{ i.expiry_date|date:"d M Y" }}{% endif %}</span></td>
+        <td>{% if i.verification_status == "verified" %}<span class="badge badge-success">Verified</span>{% elif i.verification_status == "rejected" %}<span class="badge badge-danger">Rejected</span>{% elif i.verification_status == "expired" %}<span class="badge badge-warning">Expired</span>{% else %}<span class="badge">Unverified</span>{% endif %}{% if i.is_primary %} <span class="badge badge-outline">Primary</span>{% endif %}</td>
+        <td class="actions">{% if caps.manage_identifiers %}
+          {% if i.verification_status == "unverified" %}
+            {% url 'employees:identifier_verify' employee.pk i.pk as uv %}{% include "components/post_button.html" with url=uv label="Mark verified" name="verification_status" value="verified" %}
+            {% include "components/post_button.html" with url=uv label="Reject" name="verification_status" value="rejected" css="btn-sm btn-danger" confirm="Mark this identifier as rejected?" %}
+          {% endif %}
+          {% url 'employees:identifier_remove' employee.pk i.pk as ur %}{% include "components/post_button.html" with url=ur label="Remove" css="btn-sm btn-danger" confirm="Remove this identifier?" %}
+        {% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td>{% include "components/empty.html" with icon="id-card" text="No identifiers recorded." %}</td></tr>
+    {% endfor %}
+    </tbody></table>
+  </div>
+</section>

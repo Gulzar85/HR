@@ -1,0 +1,15 @@
+<section class="card" id="sec-notes" aria-label="Notes">
+  {% url 'employees:note_add' employee.pk as add_url %}
+  {% include "employees/sections/_section_head.html" with title="Internal notes" section="notes" add_url=add_url can_add=caps.manage_notes add_label="Add note" %}
+  <div class="card-body">
+    <ul class="timeline">
+    {% for n in notes %}
+      <li>
+        <div>{% if n.pinned %}<i data-lucide="pin" aria-hidden="true"></i> {% endif %}{{ n.content|linebreaksbr }}</div>
+        <div class="when">{{ n.created_at|date:"d M Y H:i" }}{% if n.created_by %} &middot; {{ n.created_by.display_name }}{% endif %}{% if n.is_restricted %} &middot; <span class="badge badge-warning">Restricted</span>{% endif %}
+          {% if caps.manage_notes %}{% url 'employees:note_remove' employee.pk n.pk as u %}{% include "components/post_button.html" with url=u label="Remove" css="btn-sm btn-ghost" confirm="Remove this note?" %}{% endif %}</div>
+      </li>
+    {% empty %}<li class="muted">No notes. Formal matters belong in HR cases, not notes.</li>{% endfor %}
+    </ul>
+  </div>
+</section>

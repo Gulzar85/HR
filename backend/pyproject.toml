@@ -24,6 +24,7 @@ dependencies = [
     "django-csp>=4.0,<5",
     "django-import-export>=4.4",
     "whitenoise>=6.12",
+    "Pillow>=11.0",  # profile photos / avatars (ImageField + content verification)
 ]
 
 [project.optional-dependencies]
@@ -45,6 +46,7 @@ pythonpath = ["."]
 testpaths = ["tests", "apps"]
 addopts = "-ra --strict-markers --reuse-db"
 python_files = ["test_*.py"]
+markers = ["slow: large-volume performance tests"]
 
 [tool.ruff]
 line-length = 100
@@ -79,6 +81,7 @@ exclude = ["migrations", "tests"]
 module = [
     "apps.accounts.views.*", "apps.accounts.forms.*", "apps.accounts.api.*",
     "apps.organizations.views.*", "apps.organizations.forms.*", "apps.organizations.api.*",
+    "apps.employees.views.*", "apps.employees.forms", "apps.employees.api.*",
 ]
 disable_error_code = ["arg-type", "union-attr", "attr-defined", "assignment", "var-annotated", "misc", "override", "index", "operator"]
 
